@@ -1,0 +1,275 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap");
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/*
+  FamilyOS — Brittany Chiang Navy Design System
+  Matches portfolio & all_projects:
+  - Surfaces: #0a192f, #112240, #233554, #172a45
+  - Text: #ccd6f6, #8892b0, #a8b2d1, #e6f1ff
+  - Accent: #64ffda, mint wash rgba(100, 255, 218, 0.1)
+  - Typography: Inter & JetBrains Mono
+  - Pure single-theme: no light mode, no theme toggle
+*/
+
+:root {
+  --radius: 0.75rem;
+
+  /* Raw palette */
+  --navy: #0a192f;
+  --light-navy: #112240;
+  --lightest-navy: #233554;
+  --navy-border: #172a45;
+  --navy-shadow: rgba(2, 12, 27, 0.7);
+
+  --dark-slate: #495670;
+  --slate: #8892b0;
+  --light-slate: #a8b2d1;
+  --lightest-slate: #ccd6f6;
+  --white: #e6f1ff;
+
+  --green: #64ffda;
+  --green-tint: rgba(100, 255, 218, 0.1);
+
+  /* Semantic UI mappings */
+  --background: #0a192f;
+  --foreground: #ccd6f6;
+  --card: #112240;
+  --card-foreground: #ccd6f6;
+  --popover: #112240;
+  --popover-foreground: #ccd6f6;
+  --primary: #64ffda;
+  --primary-foreground: #0a192f;
+  --secondary: #172a45;
+  --secondary-foreground: #ccd6f6;
+  --muted: #172a45;
+  --muted-foreground: #8892b0;
+  --accent: rgba(100, 255, 218, 0.1);
+  --accent-foreground: #64ffda;
+  --destructive: #f43f5e;
+  --destructive-foreground: #ffffff;
+  --border: #172a45;
+  --input: #172a45;
+  --ring: #64ffda;
+
+  --brand: #64ffda;
+  --brand-strong: #64ffda;
+  --positive: #64ffda;
+  --negative: #f43f5e;
+  --warning: #f59e0b;
+  --info: #38bdf8;
+
+  --sidebar: #112240;
+  --sidebar-foreground: #ccd6f6;
+  --sidebar-primary: #64ffda;
+  --sidebar-primary-foreground: #0a192f;
+  --sidebar-accent: #172a45;
+  --sidebar-accent-foreground: #64ffda;
+  --sidebar-border: #172a45;
+  --sidebar-ring: #64ffda;
+
+  /* Glass tokens */
+  --glass-bg: rgba(17, 34, 64, 0.82);
+  --glass-border: #172a45;
+  --glass-highlight: rgba(100, 255, 218, 0.08);
+  --glass-shadow: 0 20px 50px -20px rgba(2, 12, 27, 0.85);
+
+  --bg-base: #0a192f;
+}
+
+@theme inline {
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", "SF Mono", monospace;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-navy: #0a192f;
+  --color-light-navy: #112240;
+  --color-lightest-navy: #233554;
+  --color-navy-border: #172a45;
+  --color-navy-shadow: rgba(2, 12, 27, 0.7);
+
+  --color-dark-slate: #495670;
+  --color-slate: #8892b0;
+  --color-light-slate: #a8b2d1;
+  --color-lightest-slate: #ccd6f6;
+  --color-white: #e6f1ff;
+
+  --color-green: #64ffda;
+  --color-green-tint: rgba(100, 255, 218, 0.1);
+
+  --color-brand: var(--brand);
+  --color-brand-strong: var(--brand-strong);
+  --color-positive: var(--positive);
+  --color-negative: var(--negative);
+  --color-warning: var(--warning);
+  --color-info: var(--info);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 4px);
+  --radius-xl: calc(var(--radius) + 8px);
+}
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    border-color: var(--border);
+  }
+
+  html,
+  body,
+  #app {
+    min-height: 100%;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: var(--font-sans);
+    background-color: var(--color-navy);
+    color: var(--color-slate);
+    line-height: 1.625;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  button,
+  input,
+  textarea,
+  select {
+    font: inherit;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-green);
+    outline-offset: 2px;
+  }
+
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--color-navy);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-navy-border);
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-lightest-navy);
+  }
+}
+
+@layer components {
+  /* Subtle glassmorphism on navy */
+  .glass {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow:
+      inset 0 1px 0 var(--glass-highlight),
+      var(--glass-shadow);
+  }
+
+  .glass-hover {
+    transition:
+      transform 220ms cubic-bezier(0.16, 1, 0.3, 1),
+      border-color 220ms ease,
+      box-shadow 220ms ease;
+  }
+
+  .glass-hover:hover {
+    transform: translateY(-2px);
+    border-color: var(--color-green);
+  }
+
+  /* Bento grid */
+  .bento-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+
+  @media (min-width: 640px) {
+    .bento-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .bento-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      grid-auto-rows: minmax(8.5rem, auto);
+    }
+  }
+
+  .kicker {
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-weight: 700;
+    font-size: 0.68rem;
+    color: var(--color-green);
+    font-family: var(--font-mono);
+  }
+}
+
+@layer utilities {
+  .rise-in {
+    animation: rise-in 640ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .text-positive {
+    color: var(--color-green);
+  }
+  .text-negative {
+    color: var(--color-destructive);
+  }
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

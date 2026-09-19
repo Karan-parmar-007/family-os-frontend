@@ -1,0 +1,52 @@
+/** Centralised TanStack Query keys for cache consistency. */
+export const queryKeys = {
+  currentUser: ['currentUser'] as const,
+  families: ['families'] as const,
+  familyIncome: (familyId: string) => ['families', familyId, 'income'] as const,
+  personalRecurringIncome: ['personal', 'recurringIncome'] as const,
+  personalIncomeLogs: ['personal', 'incomeLogs'] as const,
+  personalIncomeLogDetail: (logId: string) => ['personal', 'incomeLogs', logId] as const,
+  familyIncomeLogs: (familyId: string) => ['families', familyId, 'income', 'logs'] as const,
+  familyIncomeLogDetail: (familyId: string, logId: string) =>
+    ['families', familyId, 'income', 'logs', logId] as const,
+  familyTotalSavings: (familyId: string) => ['families', familyId, 'totalSavings'] as const,
+  personalTotalSavings: (familyId: string) => ['families', familyId, 'personalTotalSavings'] as const,
+  subFamilies: (familyId: string) => ['families', familyId, 'subFamilies'] as const,
+  subFamilyTree: (familyId: string) => ['families', familyId, 'subFamilyTree'] as const,
+  upcoming: (familyId: string) => ['families', familyId, 'upcoming'] as const,
+  globalEntries: () => ['globalEntries'] as const,
+  familyExpense: (familyId: string) => ['families', familyId, 'expense'] as const,
+  personalRecurringExpense: ['personal', 'recurringExpense'] as const,
+  personalExpenseLogs: ['personal', 'expenseLogs'] as const,
+  personalExpenseLogDetail: (logId: string) => ['personal', 'expenseLogs', logId] as const,
+  familyExpenseLogs: (familyId: string) => ['families', familyId, 'expense', 'logs'] as const,
+  familyExpenseLogDetail: (familyId: string, logId: string) =>
+    ['families', familyId, 'expense', 'logs', logId] as const,
+  expenses: (familyId: string) => ['families', familyId, 'expenses'] as const,
+  debts: (familyId: string) => ['families', familyId, 'debts'] as const,
+  transfers: (familyId: string) => ['families', familyId, 'transfers'] as const,
+  assets: (familyId: string) => ['families', familyId, 'assets'] as const,
+  insurance: (familyId: string) => ['families', familyId, 'insurance'] as const,
+  goals: (familyId: string) => ['families', familyId, 'goals'] as const,
+  savingsPlans: (familyId: string) => ['families', familyId, 'savingsPlans'] as const,
+  investments: (familyId: string) => ['families', familyId, 'investments'] as const,
+  investmentHistory: (familyId: string) => ['families', familyId, 'investments', 'history'] as const,
+  investmentTxns: (familyId: string, investmentId: string) =>
+    ['families', familyId, 'investments', investmentId, 'txns'] as const,
+  familySavingsLedger: (familyId: string) =>
+    ['families', familyId, 'savings', 'ledger'] as const,
+  subFamilySavings: (familyId: string, subFamilyId: string) =>
+    ['families', familyId, 'subFamilies', subFamilyId, 'savings'] as const,
+  subFamilySavingsLedger: (familyId: string, subFamilyId: string) =>
+    ['families', familyId, 'subFamilies', subFamilyId, 'savings', 'ledger'] as const,
+  globalSavings: () => ['globalSavings'] as const,
+  notifications: () => ['notifications'] as const,
+  notificationUnreadCount: () => ['notifications', 'unreadCount'] as const,
+  history: (familyId: string) => ['families', familyId, 'history'] as const,
+  relationships: (familyId: string) => ['families', familyId, 'relationships'] as const,
+  relationshipJoinCode: (familyId: string) => ['families', familyId, 'relationships', 'joinCode'] as const,
+  friends: ['friends'] as const,
+  activeFriends: ['friends', 'active'] as const,
+  friendCode: ['friends', 'code'] as const,
+  personalTransfers: ['personal', 'transfers'] as const,
+}
