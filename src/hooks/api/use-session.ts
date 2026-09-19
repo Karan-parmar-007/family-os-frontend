@@ -1,6 +1,6 @@
 // hooks/api/familyos/use-session.ts
 import { useQuery } from '@tanstack/react-query'
-import { authApi, type SessionResponse } from '#/lib/api/familyos/endpoints/auth'
+import { authApi, type SessionResponse } from '#/lib/api/endpoints/auth'
 
 const EMPTY_SESSION: SessionResponse = {
   authenticated: false,

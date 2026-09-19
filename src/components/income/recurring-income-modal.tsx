@@ -24,8 +24,8 @@ import {
   RecurringDocumentFields,
 } from '#/components/forms/recurring-document-fields'
 import { activePersonalRows, canEnableEveryoneEdit, type PersonalFundingRow } from '#/lib/forms/allocation'
-import { useCreateIncomeCategory, useIncomeCategories } from '#/hooks/api/familyos/use-income'
-import { useActiveFriends } from '#/hooks/api/familyos/use-friends'
+import { useCreateIncomeCategory, useIncomeCategories } from '#/hooks/api/use-income'
+import { useActiveFriends } from '#/hooks/api/use-friends'
 import type { RecurringIncomeDetail } from '#/lib/api'
 
 type FamilySplitRow = { family_id: string; split_name: string; amount: string }

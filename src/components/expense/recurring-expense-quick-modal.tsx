@@ -16,7 +16,7 @@ import {
 import { canEnableEveryoneEdit } from '#/lib/forms/allocation'
 import { LetEveryoneEditSection } from '#/components/forms/let-everyone-edit-section'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '#/components/ui/select'
-import { useCreateExpenseCategory, useExpenseCategories } from '#/hooks/api/familyos/use-expenses'
+import { useCreateExpenseCategory, useExpenseCategories } from '#/hooks/api/use-expenses'
 
 type FrequencyMode = 'preset' | 'custom'
 

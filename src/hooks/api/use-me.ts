@@ -1,6 +1,6 @@
 // hooks/api/familyos/use-me.ts
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { meApi, type ProfileResponse, type ProfileSetupRequest, type ProfileUpdateRequest } from '#/lib/api/familyos/endpoints/me'
+import { meApi, type ProfileResponse, type ProfileSetupRequest, type ProfileUpdateRequest } from '#/lib/api/endpoints/me'
 
 export const ME_QUERY_KEY = ['fos-me']
 

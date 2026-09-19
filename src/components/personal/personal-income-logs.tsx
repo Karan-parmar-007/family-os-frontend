@@ -35,7 +35,7 @@ import {
   useUpdateMyIncomeLog,
   useIncomeCategories,
   useCreateIncomeCategory,
-} from '#/hooks/api/familyos/use-income'
+} from '#/hooks/api/use-income'
 import {
   checkLogDocAccess,
   downloadLogDocument,

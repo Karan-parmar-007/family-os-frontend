@@ -15,8 +15,8 @@ import {
   useFriends,
   useRejectFriend,
   useRequestFriend,
-} from '#/hooks/api/familyos/use-friends'
-import { useCurrentUser } from '#/hooks/api/familyos/use-current-user'
+} from '#/hooks/api/use-friends'
+import { useCurrentUser } from '#/hooks/api/use-current-user'
 import { ApiError } from '#/lib/api'
 
 export const Route = createFileRoute('/_authenticated/personal/friends')({

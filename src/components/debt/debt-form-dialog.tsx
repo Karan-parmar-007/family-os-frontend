@@ -32,13 +32,13 @@ import {
   viewLogDocument,
   downloadLogDocument,
 } from '#/lib/documents/log-document-actions'
-import type { DebtSummary } from '#/lib/api/familyos/types'
-import { debtsApi } from '#/lib/api/familyos/endpoints/debts'
+import type { DebtSummary } from '#/lib/api/types'
+import { debtsApi } from '#/lib/api/endpoints/debts'
 import type {
   DebtQuoteResponse,
   SplitLineBody,
-} from '#/lib/api/familyos/endpoints/debts'
-import type { SplitLinePayload } from '#/lib/api/familyos/endpoints/funding'
+} from '#/lib/api/endpoints/debts'
+import type { SplitLinePayload } from '#/lib/api/endpoints/funding'
 import { formatCurrency } from '#/lib/format'
 
 const DEBT_TYPES = [

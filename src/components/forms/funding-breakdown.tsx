@@ -4,7 +4,7 @@
  * Shows a visual breakdown with pool type badges, amounts, and family/personal labels.
  */
 
-import type { FundingBreakdownEntry } from '#/lib/api/familyos/endpoints/funding'
+import type { FundingBreakdownEntry } from '#/lib/api/endpoints/funding'
 
 const POOL_COLORS: Record<string, string> = {
   CURRENT_FAMILY:

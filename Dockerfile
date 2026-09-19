@@ -27,8 +27,8 @@ ENV NODE_ENV=production \
     NITRO_HOST=0.0.0.0 \
     NITRO_PORT=80
 
-COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/.output ./.output
 
 EXPOSE 80
 
-CMD ["node", "dist/server/index.mjs"]
+CMD ["node", ".output/server/index.mjs"]

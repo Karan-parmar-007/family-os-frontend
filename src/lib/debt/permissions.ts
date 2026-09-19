@@ -1,4 +1,4 @@
-import type { DebtSummary } from '#/lib/api/familyos/types'
+import type { DebtSummary } from '#/lib/api/types'
 
 /** True when the viewer is the user who added / owns the debt. */
 export function isDebtOwner(debt: DebtSummary, userId?: string | null): boolean {

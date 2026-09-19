@@ -18,9 +18,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '#/components/ui/dropdown-menu'
-import { useLogout } from '#/hooks/api/familyos/use-auth'
-import { useUnreadNotificationCount } from '#/hooks/api/familyos/use-notifications'
-import { useCurrentUser } from '#/hooks/api/familyos/use-current-user'
+import { useLogout } from '#/hooks/api/use-auth'
+import { useUnreadNotificationCount } from '#/hooks/api/use-notifications'
+import { useCurrentUser } from '#/hooks/api/use-current-user'
 import { useAppWorkspace } from '#/hooks/use-app-workspace'
 
 function initialsOf(name?: string | null) {

@@ -1,4 +1,4 @@
-import { useGlobalSavings } from '#/hooks/api/familyos/use-savings'
+import { useGlobalSavings } from '#/hooks/api/use-savings'
 import { formatCurrency } from '#/lib/format'
 import { PiggyBankIcon } from 'lucide-react'
 

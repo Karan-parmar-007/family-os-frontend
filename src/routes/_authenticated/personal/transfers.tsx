@@ -23,9 +23,9 @@ import {
   useCreatePersonalTransfer,
   useDeclinePersonalTransfer,
   usePersonalTransfers,
-} from "#/hooks/api/familyos/use-transfers"
-import { useActiveFriends } from "#/hooks/api/familyos/use-friends"
-import { useFamilies } from "#/hooks/api/familyos/use-families"
+} from "#/hooks/api/use-transfers"
+import { useActiveFriends } from "#/hooks/api/use-friends"
+import { useFamilies } from "#/hooks/api/use-families"
 import { ApiError } from "#/lib/api"
 import { formatCurrency } from "#/lib/format"
 import { toast } from "sonner"

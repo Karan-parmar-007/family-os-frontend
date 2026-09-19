@@ -3,7 +3,7 @@ import {
   adminApi,
   type CurrencyCreatePayload,
   type CurrencyUpdatePayload,
-} from '#/lib/api/familyos/endpoints/admin'
+} from '#/lib/api/endpoints/admin'
 
 export const ADMIN_USERS_KEY = ['admin', 'users']
 export const ADMIN_FAMILIES_KEY = ['admin', 'families']

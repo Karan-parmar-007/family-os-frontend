@@ -16,7 +16,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '#/components/ui/select'
 import { LetEveryoneEditSection } from '#/components/forms/let-everyone-edit-section'
 import { canEnableEveryoneEdit } from '#/lib/forms/allocation'
-import { useCreateIncomeCategory, useIncomeCategories } from '#/hooks/api/familyos/use-income'
+import { useCreateIncomeCategory, useIncomeCategories } from '#/hooks/api/use-income'
 
 type FrequencyMode = 'preset' | 'custom'
 

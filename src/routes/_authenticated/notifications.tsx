@@ -4,7 +4,7 @@ import { AppShell } from '#/components/layout/app-shell'
 import { BentoCard, BentoGrid } from '#/components/bento/bento'
 import { NotificationCenter } from '#/components/notifications/notification-center'
 import { Button } from '#/components/ui/button'
-import { useNotifications } from '#/hooks/api/familyos/use-notifications'
+import { useNotifications } from '#/hooks/api/use-notifications'
 
 export const Route = createFileRoute('/_authenticated/notifications')({
   component: NotificationsPage,

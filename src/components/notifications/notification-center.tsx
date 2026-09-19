@@ -16,7 +16,7 @@ import {
   useMarkNotificationRead,
   useNotificationAction,
   useNotifications,
-} from '#/hooks/api/familyos/use-notifications'
+} from '#/hooks/api/use-notifications'
 import { ApiError, type NotificationItem } from '#/lib/api'
 import { NotificationCard } from './cards'
 

@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { friendsApi } from '#/lib/api/familyos/endpoints/friends'
+import { friendsApi } from '#/lib/api/endpoints/friends'
 import { queryKeys } from '#/lib/query/keys'
 
 export function useFriends() {

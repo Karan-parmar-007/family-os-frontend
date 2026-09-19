@@ -1,4 +1,4 @@
-import { useFamilies } from '#/hooks/api/familyos/use-families'
+import { useFamilies } from '#/hooks/api/use-families'
 
 /** Family id used as API context for personal-scoped features that still need a family. */
 export function usePersonalFamilyId(): string | undefined {

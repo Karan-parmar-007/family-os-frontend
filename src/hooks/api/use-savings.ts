@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { savingsApi } from '#/lib/api'
-import { meApi } from '#/lib/api/familyos/endpoints/me'
+import { meApi } from '#/lib/api/endpoints/me'
 import { queryKeys } from '#/lib/query/keys'
 
 const STALE_MS = 5 * 60 * 1000

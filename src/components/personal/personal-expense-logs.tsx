@@ -33,8 +33,8 @@ import {
   useMyExpenseLogDetail,
   useCreateMyExpenseLog,
   useUpdateMyExpenseLog,
-} from '#/hooks/api/familyos/use-expenses-recurring'
-import { useExpenseCategories, useCreateExpenseCategory } from '#/hooks/api/familyos/use-expenses'
+} from '#/hooks/api/use-expenses-recurring'
+import { useExpenseCategories, useCreateExpenseCategory } from '#/hooks/api/use-expenses'
 import {
   checkLogDocAccess,
   downloadLogDocument,

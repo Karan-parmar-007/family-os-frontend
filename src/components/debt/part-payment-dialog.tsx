@@ -20,13 +20,13 @@ import {
 import { Textarea } from '#/components/ui/textarea'
 import { PaymentSplitEditor } from '#/components/forms/payment-split-editor'
 import type { FamilyOption } from '#/components/forms/payment-split-editor'
-import type { SplitLineBody } from '#/lib/api/familyos/endpoints/debts'
-import type { SplitLinePayload } from '#/lib/api/familyos/endpoints/funding'
+import type { SplitLineBody } from '#/lib/api/endpoints/debts'
+import type { SplitLinePayload } from '#/lib/api/endpoints/funding'
 import type {
   DebtSummary,
   PartPaymentMode,
   PartPaymentResponse,
-} from '#/lib/api/familyos/types'
+} from '#/lib/api/types'
 import { ApiError } from '#/lib/api'
 import { formatCurrency } from '#/lib/format'
 

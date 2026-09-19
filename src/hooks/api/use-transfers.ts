@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { transfersApi, type TransferCreateBody } from '#/lib/api/familyos/endpoints/transfers'
+import { transfersApi, type TransferCreateBody } from '#/lib/api/endpoints/transfers'
 import { queryKeys } from '#/lib/query/keys'
 
 export function useTransfers(familyId: string) {

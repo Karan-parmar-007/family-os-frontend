@@ -6,7 +6,7 @@ import {
   useAdminDeleteUser,
   useAdminUpdateUserCap,
   useAdminUsers,
-} from '#/hooks/api/familyos/use-admin'
+} from '#/hooks/api/use-admin'
 
 export const Route = createFileRoute('/_authenticated/admin/users')({
   component: AdminUsersPage,

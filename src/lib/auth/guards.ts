@@ -1,7 +1,7 @@
 // lib/auth/guards.ts
 import { isRedirect, redirect } from '@tanstack/react-router'
-import { authApi } from '#/lib/api/familyos/endpoints/auth'
-import { isNetworkError } from '#/lib/api/familyos/client'
+import { authApi } from '#/lib/api/endpoints/auth'
+import { isNetworkError } from '#/lib/api/client'
 
 /**
  * Redirect unauthenticated visitors to the public home page.

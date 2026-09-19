@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { Home, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
-import { useAdminDeleteFamily, useAdminFamilies } from '#/hooks/api/familyos/use-admin'
+import { useAdminDeleteFamily, useAdminFamilies } from '#/hooks/api/use-admin'
 
 export const Route = createFileRoute('/_authenticated/admin/families')({
   component: AdminFamiliesPage,

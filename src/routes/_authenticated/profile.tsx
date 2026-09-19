@@ -31,8 +31,8 @@ import {
   SelectValue,
 } from '#/components/ui/select'
 import { Skeleton } from '#/components/ui/skeleton'
-import { useCurrentUser } from '#/hooks/api/familyos/use-current-user'
-import { useUpdateProfile } from '#/hooks/api/familyos/use-me'
+import { useCurrentUser } from '#/hooks/api/use-current-user'
+import { useUpdateProfile } from '#/hooks/api/use-me'
 import { ApiError } from '#/lib/api'
 import { CURRENCIES } from '#/lib/currencies'
 import { ssoLoginUrl } from '#/lib/sso'

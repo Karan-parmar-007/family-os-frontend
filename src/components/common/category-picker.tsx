@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { apiFetch } from '#/lib/api/familyos/client'
+import { apiFetch } from '#/lib/api/client'
 import { PlusIcon, CheckIcon, ChevronDownIcon } from 'lucide-react'
 import { toast } from 'sonner'
 import { Label } from '#/components/ui/label'

@@ -1,5 +1,5 @@
-import type { SplitLinePayload } from '#/lib/api/familyos/endpoints/funding'
-import type { DebtScopeViewSummary } from '#/lib/api/familyos/types'
+import type { SplitLinePayload } from '#/lib/api/endpoints/funding'
+import type { DebtScopeViewSummary } from '#/lib/api/types'
 
 export type ScopeViewDraft = {
   scopeKind: 'PERSONAL' | 'FAMILY'

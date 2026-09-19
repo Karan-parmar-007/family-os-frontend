@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '#/components/ui/select'
-import type { SplitLinePayload } from '#/lib/api/familyos/endpoints/funding'
+import type { SplitLinePayload } from '#/lib/api/endpoints/funding'
 
 export type FamilyOption = {
   id: string

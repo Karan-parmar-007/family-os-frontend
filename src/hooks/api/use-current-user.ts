@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
-import { authApi } from '#/lib/api/familyos/endpoints/auth'
-import type { UserMeResponse } from '#/lib/api/familyos/types'
+import { authApi } from '#/lib/api/endpoints/auth'
+import type { UserMeResponse } from '#/lib/api/types'
 import { queryKeys } from '#/lib/query/keys'
 
 const PUBLIC_PATHS = new Set([

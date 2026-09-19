@@ -10,11 +10,11 @@ import { Badge } from '#/components/ui/badge'
 import { Input } from '#/components/ui/input'
 import { Label } from '#/components/ui/label'
 import { formatCurrency } from '#/lib/format'
-import type { DebtPaymentEvent, DebtSummary } from '#/lib/api/familyos/types'
+import type { DebtPaymentEvent, DebtSummary } from '#/lib/api/types'
 import { FileTextIcon, DownloadIcon, EyeIcon } from 'lucide-react'
 import { documentsApi } from '#/lib/api'
 import { toast } from 'sonner'
-import { useCurrentUser } from '#/hooks/api/familyos/use-current-user'
+import { useCurrentUser } from '#/hooks/api/use-current-user'
 import { checkLogDocAccess } from '#/lib/documents/log-document-actions'
 import {
   canApplyPartPayment,

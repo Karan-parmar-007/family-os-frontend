@@ -6,7 +6,7 @@ import { BentoCard, BentoGrid } from '#/components/bento/bento'
 import { LedgerTable } from '#/components/savings/ledger-table'
 import { GlobalSavingsCard } from '#/components/savings/global-savings-card'
 import { ListPagination } from '#/components/ui/list-pagination'
-import { usePersonalSavingsLedger } from '#/hooks/api/familyos/use-savings'
+import { usePersonalSavingsLedger } from '#/hooks/api/use-savings'
 import type { SavingsLedgerEntry } from '#/lib/api'
 
 const LEDGER_PAGE_SIZE = 20

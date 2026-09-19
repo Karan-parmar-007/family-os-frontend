@@ -2,7 +2,7 @@ import { createFileRoute, Link } from '@tanstack/react-router'
 import { CronRunButton } from '#/components/common/cron-run-button'
 import { AppShell } from '#/components/layout/app-shell'
 import { Button } from '#/components/ui/button'
-import { upcomingApi } from '#/lib/api/familyos/endpoints/upcoming'
+import { upcomingApi } from '#/lib/api/endpoints/upcoming'
 import { useQuery } from '@tanstack/react-query'
 import { formatCurrency } from '#/lib/format'
 

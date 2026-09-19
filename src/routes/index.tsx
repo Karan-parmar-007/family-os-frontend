@@ -4,8 +4,8 @@ import { Logo } from "#/components/brand/logo"
 import { Donut } from "#/components/charts/donut"
 import { Sparkline } from "#/components/charts/sparkline"
 import { Button } from "#/components/ui/button"
-import { useCurrentUser } from "#/hooks/api/familyos/use-current-user"
-import { useSession } from "#/hooks/api/familyos/use-session"
+import { useCurrentUser } from "#/hooks/api/use-current-user"
+import { useSession } from "#/hooks/api/use-session"
 import { ssoLoginUrl } from "#/lib/sso"
 
 export const Route = createFileRoute("/")({

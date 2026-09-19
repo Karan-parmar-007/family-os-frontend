@@ -1,8 +1,8 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
 import { ChevronRight, Coins, Compass, Sparkles, User, Wallet } from 'lucide-react'
-import { useSession } from '#/hooks/api/familyos/use-session'
-import { useSetupProfile } from '#/hooks/api/familyos/use-me'
+import { useSession } from '#/hooks/api/use-session'
+import { useSetupProfile } from '#/hooks/api/use-me'
 
 export const Route = createFileRoute('/setup')({
   component: SetupPage,

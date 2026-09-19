@@ -5,7 +5,7 @@ import { cn } from '#/lib/utils'
 import { familyNavSections, personalNavSections } from './nav-config'
 import type { NavItem } from './nav-config'
 import { useAppWorkspace } from '#/hooks/use-app-workspace'
-import { useCurrentUser } from '#/hooks/api/familyos/use-current-user'
+import { useCurrentUser } from '#/hooks/api/use-current-user'
 import { setStoredWorkspace } from '#/lib/app-context'
 
 function NavLink({

@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { currencyApi } from '#/lib/api'
-import type { CreateCurrencyRateRequest } from '#/lib/api/familyos/types'
+import type { CreateCurrencyRateRequest } from '#/lib/api/types'
 
 const KEY = ['currencyRates'] as const
 

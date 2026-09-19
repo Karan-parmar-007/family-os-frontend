@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react'
-import { documentsApi } from '#/lib/api/familyos/endpoints/documents'
+import { documentsApi } from '#/lib/api/endpoints/documents'
 import { Label } from '#/components/ui/label'
 import { toast } from 'sonner'
 import {

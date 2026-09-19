@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from '#/components/ui/select'
 import { Switch } from '#/components/ui/switch'
-import type { SplitLinePayload } from '#/lib/api/familyos/endpoints/funding'
+import type { SplitLinePayload } from '#/lib/api/endpoints/funding'
 import type { ScopeViewDraft } from '#/components/debt/debt-scope-views-editor'
 
 export type FamilyOption = { id: string; name: string }

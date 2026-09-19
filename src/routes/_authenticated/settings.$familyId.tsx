@@ -7,7 +7,7 @@ import {
   useFamilies,
   useFamilyMembers,
   useUpdateFamily,
-} from '#/hooks/api/familyos/use-families'
+} from '#/hooks/api/use-families'
 import { CopyIcon, CheckIcon, ClockIcon, UserCheckIcon, UserXIcon } from 'lucide-react'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
@@ -49,7 +49,7 @@ import {
   useRejectRelationship,
   useRelationships,
   useRemoveRelationship,
-} from '#/hooks/api/familyos/use-relationships'
+} from '#/hooks/api/use-relationships'
 import { ApiError } from '#/lib/api'
 import { CURRENCIES } from '#/lib/currencies'
 

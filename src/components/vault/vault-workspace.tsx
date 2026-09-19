@@ -5,9 +5,9 @@ import { Label } from '#/components/ui/label'
 import { CategoryPicker } from '#/components/common/category-picker'
 import { FosModalOverlay } from '#/components/ui/fos-modal'
 import { DocumentUploader } from '#/components/common/document-uploader'
-import { useFamilyMembers } from '#/hooks/api/familyos/use-families'
-import { apiFetch } from '#/lib/api/familyos/client'
-import { documentsApi } from '#/lib/api/familyos/endpoints/documents'
+import { useFamilyMembers } from '#/hooks/api/use-families'
+import { apiFetch } from '#/lib/api/client'
+import { documentsApi } from '#/lib/api/endpoints/documents'
 import { toast } from 'sonner'
 import {
   LockKeyholeIcon,

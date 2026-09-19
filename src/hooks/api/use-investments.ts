@@ -8,7 +8,7 @@ import type {
   ContributeToInvestmentRequest,
   RedeemInvestmentRequest,
   UpdateInvestmentValueRequest,
-} from '#/lib/api/familyos/types'
+} from '#/lib/api/types'
 
 export function useInvestments(familyId: string, scope: AppScope, status?: string) {
   const filters = scopeListParams(scope)

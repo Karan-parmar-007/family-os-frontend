@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { CalendarClock, Coins, Home, Users } from 'lucide-react'
 import { CronRunButton } from '#/components/common/cron-run-button'
-import { useAdminCurrencies, useAdminFamilies, useAdminUsers } from '#/hooks/api/familyos/use-admin'
+import { useAdminCurrencies, useAdminFamilies, useAdminUsers } from '#/hooks/api/use-admin'
 
 export const Route = createFileRoute('/_authenticated/admin/')({
   component: AdminHomePage,
