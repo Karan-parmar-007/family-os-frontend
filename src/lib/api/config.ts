@@ -9,11 +9,23 @@
 /**
  * In the browser, use same-origin (`''`) so Vite (dev) or Caddy (prod)
  * can route `/api/familyos` and `/api/auth`. SSR talks to the backend
- * on port 8003. Set `VITE_API_BASE_URL` to override.
+ * via `API_BASE_URL` (Docker) or localhost:8003 (dev). Set
+ * `VITE_API_BASE_URL` to override both.
  */
-const rawBaseUrl =
-  (import.meta.env.VITE_API_BASE_URL as string | undefined) ??
-  (import.meta.env.SSR ? 'http://localhost:8003' : '')
+function resolveApiBaseUrl(): string {
+  const fromVite = import.meta.env.VITE_API_BASE_URL as string | undefined
+  if (import.meta.env.SSR) {
+    const fromRuntime =
+      typeof process !== 'undefined' ? process.env.API_BASE_URL : undefined
+    return (fromRuntime || fromVite || 'http://localhost:8003').replace(
+      /\/+$/,
+      '',
+    )
+  }
+  return (fromVite ?? '').replace(/\/+$/, '')
+}
+
+const rawBaseUrl = resolveApiBaseUrl()
 
 /** Backend origin, without a trailing slash. Empty string = same-origin. */
 export const API_BASE_URL = rawBaseUrl.replace(/\/+$/, '')

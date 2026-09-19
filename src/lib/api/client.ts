@@ -154,12 +154,17 @@ export interface RequestOptions extends Omit<RequestInit, 'body'> {
   skipAuthRefresh?: boolean
 }
 
+function resolveFetchBase(): string {
+  if (API_BASE_URL) return API_BASE_URL
+  if (typeof window !== 'undefined') return window.location.origin
+  if (typeof process !== 'undefined' && process.env.API_BASE_URL) {
+    return process.env.API_BASE_URL
+  }
+  return 'http://localhost:8003'
+}
+
 function buildUrl(path: string, params?: RequestOptions['params']): string {
-  const base =
-    API_BASE_URL ||
-    (typeof window !== 'undefined'
-      ? window.location.origin
-      : 'http://localhost:8003')
+  const base = resolveFetchBase()
 
   const url = new URL(path, base.endsWith('/') ? base : `${base}/`)
   if (params) {
@@ -183,11 +188,7 @@ async function refreshAccessToken(): Promise<boolean> {
     refreshPromise = (async () => {
       try {
         const csrf = readCookie(CSRF_COOKIE_NAME)
-        const refreshBase =
-          API_BASE_URL ||
-          (typeof window !== 'undefined'
-            ? window.location.origin
-            : 'http://localhost:8003')
+        const refreshBase = resolveFetchBase()
         const refreshUrl = new URL(REFRESH_PATH, `${refreshBase}/`).toString()
         const res = await fetch(refreshUrl, {
           method: 'POST',
