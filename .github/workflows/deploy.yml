@@ -61,6 +61,7 @@ jobs:
           platforms: linux/amd64
           build-args: |
             VITE_SSO_URL=https://auth.karanparmar.in
+            VITE_APP_URL=https://familyos.karanparmar.in
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           annotations: ${{ steps.meta.outputs.annotations }}

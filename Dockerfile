@@ -8,7 +8,9 @@ RUN npm ci --no-audit --no-fund
 COPY . .
 
 ARG VITE_SSO_URL=https://auth.karanparmar.in
+ARG VITE_APP_URL=https://familyos.karanparmar.in
 ENV VITE_SSO_URL=${VITE_SSO_URL}
+ENV VITE_APP_URL=${VITE_APP_URL}
 
 RUN npm run build
 
@@ -25,7 +27,8 @@ ENV NODE_ENV=production \
     HOST=0.0.0.0 \
     PORT=80 \
     NITRO_HOST=0.0.0.0 \
-    NITRO_PORT=80
+    NITRO_PORT=80 \
+    APP_URL=https://familyos.karanparmar.in
 
 COPY --from=builder /app/.output ./.output
 

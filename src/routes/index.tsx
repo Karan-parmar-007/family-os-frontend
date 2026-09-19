@@ -6,7 +6,6 @@ import { Sparkline } from "#/components/charts/sparkline"
 import { Button } from "#/components/ui/button"
 import { useCurrentUser } from "#/hooks/api/use-current-user"
 import { useSession } from "#/hooks/api/use-session"
-import { ssoLoginUrl } from "#/lib/sso"
 
 export const Route = createFileRoute("/")({
   component: LandingPage,
@@ -46,13 +45,13 @@ function LandingPage() {
                   asChild
                   className="text-[#ccd6f6] hover:bg-[#112240] hover:text-[#64ffda]"
                 >
-                  <a href={ssoLoginUrl("/")}>Sign in</a>
+                  <Link to="/login">Sign in</Link>
                 </Button>
                 <Button
                   asChild
                   className="bg-[#64ffda] text-[#0a192f] hover:bg-[#64ffda]/90 font-medium"
                 >
-                  <a href={ssoLoginUrl("/")}>Get started</a>
+                  <Link to="/signup">Get started</Link>
                 </Button>
               </>
             )}
@@ -94,10 +93,10 @@ function LandingPage() {
                     className="gap-2 bg-[#64ffda] text-[#0a192f] hover:bg-[#64ffda]/90 font-semibold"
                     asChild
                   >
-                    <a href={ssoLoginUrl("/")}>
+                    <Link to="/signup">
                       Start free with SSO
                       <ArrowRightIcon className="size-4" />
-                    </a>
+                    </Link>
                   </Button>
                   <Button
                     size="lg"
@@ -105,7 +104,7 @@ function LandingPage() {
                     className="border-[#172a45] bg-[#112240]/60 text-[#ccd6f6] hover:border-[#64ffda]/60 hover:text-[#64ffda]"
                     asChild
                   >
-                    <a href={ssoLoginUrl("/")}>Sign in</a>
+                    <Link to="/login">Sign in</Link>
                   </Button>
                 </>
               )}
@@ -241,7 +240,7 @@ function LandingPage() {
                 className="bg-[#64ffda] text-[#0a192f] hover:bg-[#64ffda]/90 font-semibold"
                 asChild
               >
-                <a href={ssoLoginUrl("/")}>Get started with SSO</a>
+                <Link to="/signup">Get started with SSO</Link>
               </Button>
             )}
           </div>
