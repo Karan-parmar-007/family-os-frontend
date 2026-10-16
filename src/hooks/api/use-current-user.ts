@@ -1,5 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
-import { authApi } from '#/lib/api/endpoints/auth'
+import { resolveSession } from '#/lib/auth/session'
+import { SSO_APP_ID } from '#/lib/sso'
+import { isAppAdmin } from '#/lib/sso/sso-client'
 import type { UserMeResponse } from '#/lib/api/types'
 import { queryKeys } from '#/lib/query/keys'
 
@@ -23,7 +25,7 @@ export function useCurrentUser() {
         PUBLIC_PATHS.has(window.location.pathname)
 
       try {
-        const session = await authApi.session()
+        const session = await resolveSession()
         if (!session.authenticated) return null
         const profile = session.profile
         return {
@@ -32,7 +34,8 @@ export function useCurrentUser() {
           name: profile?.displayName ?? session.name ?? '',
           is_active: true,
           is_email_verified: true,
-          is_super_admin: Boolean(session.isOwner || session.isAdmin),
+          // UI gating only; the backend enforces (AdminDep, live SSO check).
+          is_super_admin: isAppAdmin(session.ssoUser, SSO_APP_ID),
           preferred_currency: profile?.personalCurrency ?? 'USD',
           personal_currency: profile?.personalCurrency ?? 'USD',
           friend_code: profile?.personalCode,
