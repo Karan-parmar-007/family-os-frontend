@@ -1,9 +1,9 @@
 /**
  * Central API configuration.
  *
- * The FastAPI backend uses OAuth 2.0 with httpOnly cookies for the access &
- * refresh tokens, plus a double-submit CSRF token. Because tokens live in
- * cookies, every request must be sent with credentials included.
+ * Auth is owned by SSO: it sets the httpOnly `access_token` cookie (sent to
+ * this API) plus a double-submit CSRF cookie. Because the token lives in a
+ * cookie, every request must be sent with credentials included.
  */
 
 /**
@@ -34,7 +34,7 @@ export const API_BASE_URL = rawBaseUrl.replace(/\/+$/, '')
 export const API_PREFIX = '/api/familyos'
 
 /**
- * Name of the non-httpOnly cookie the backend sets with the CSRF token.
+ * Name of the non-httpOnly cookie SSO sets with the CSRF token.
  * The value is echoed back in the `X-CSRF-Token` header on mutating requests
  * (double-submit cookie pattern).
  */
@@ -42,16 +42,3 @@ export const CSRF_COOKIE_NAME = 'csrf_token'
 
 /** Header used to send the CSRF token back to the server. */
 export const CSRF_HEADER_NAME = 'X-CSRF-Token'
-
-/** Endpoint used to silently mint a fresh access token from the refresh token. */
-export const REFRESH_PATH = '/api/auth/refresh'
-
-/** Endpoint used to revoke the refresh token on explicit logout. */
-export const LOGOUT_PATH = '/api/auth/logout'
-
-/**
- * Response header the backend sets when it terminates a session
- * (CSRF failure, refresh token expired, etc.).
- */
-export const SESSION_EXPIRED_HEADER = 'x-session-expired'
-

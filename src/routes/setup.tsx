@@ -3,8 +3,10 @@ import { useState } from 'react'
 import { ChevronRight, Coins, Compass, Sparkles, User, Wallet } from 'lucide-react'
 import { useSession } from '#/hooks/api/use-session'
 import { useSetupProfile } from '#/hooks/api/use-me'
+import { requireSetupPending } from '#/lib/auth/guards'
 
 export const Route = createFileRoute('/setup')({
+  beforeLoad: requireSetupPending,
   component: SetupPage,
 })
 

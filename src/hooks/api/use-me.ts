@@ -1,6 +1,7 @@
 // hooks/api/familyos/use-me.ts
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { meApi, type ProfileResponse, type ProfileSetupRequest, type ProfileUpdateRequest } from '#/lib/api/endpoints/me'
+import { meApi } from '#/lib/api/endpoints/me'
+import type { ProfileResponse, ProfileSetupRequest, ProfileUpdateRequest } from '#/lib/api/endpoints/me'
 
 export const ME_QUERY_KEY = ['fos-me']
 
@@ -20,6 +21,7 @@ export function useSetupProfile() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ME_QUERY_KEY })
       qc.invalidateQueries({ queryKey: ['sso-session'] })
+      qc.invalidateQueries({ queryKey: ['currentUser'] })
     },
   })
 }

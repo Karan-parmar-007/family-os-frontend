@@ -1,6 +1,6 @@
 // lib/api/familyos/endpoints/auth.ts
-// Auth endpoints backed by the SSO proxy layer.
-// Local login/signup/reset endpoints have been removed — SSO owns credentials.
+// Family OS view of the current session. Sign-in, refresh and logout belong
+// to SSO — use `sso` from '#/lib/sso' for those.
 import { apiFetch } from '../client'
 
 export interface ProfileSummary {
@@ -19,28 +19,18 @@ export interface SessionResponse {
   email: string | null
   userId: string | null
   roleName: string | null
+  /** App-scoped SSO roles from the access token, e.g. `{ familyos: ['admin'] }`. */
+  appRoles?: Record<string, string[]>
   name: string | null
   profile: ProfileSummary | null
 }
 
-export interface RefreshResponse {
-  message: string
-  accessTokenExpiresIn: number | null
-}
-
 export const authApi = {
+  /** Always 200; never refreshes (call `sso.getSession()` first for that). */
   session(): Promise<SessionResponse> {
     return apiFetch<SessionResponse>('/api/familyos/auth/session', {
       method: 'GET',
       skipAuthRefresh: true,
     })
-  },
-
-  refresh(): Promise<RefreshResponse> {
-    return apiFetch<RefreshResponse>('/api/auth/refresh', { method: 'POST' })
-  },
-
-  logout(): Promise<{ message: string }> {
-    return apiFetch<{ message: string }>('/api/auth/logout', { method: 'POST' })
   },
 }

@@ -1,26 +1,18 @@
 // hooks/api/familyos/use-session.ts
 import { useQuery } from '@tanstack/react-query'
-import { authApi, type SessionResponse } from '#/lib/api/endpoints/auth'
+import { ANONYMOUS_SESSION, resolveSession } from '#/lib/auth/session'
+import type { AppSession } from '#/lib/auth/session'
 
-const EMPTY_SESSION: SessionResponse = {
-  authenticated: false,
-  isOwner: false,
-  isAdmin: false,
-  email: null,
-  userId: null,
-  roleName: null,
-  name: null,
-  profile: null,
-}
+export const SESSION_QUERY_KEY = ['sso-session'] as const
 
 export function useSession() {
   return useQuery({
-    queryKey: ['sso-session'],
-    queryFn: async (): Promise<SessionResponse> => {
+    queryKey: SESSION_QUERY_KEY,
+    queryFn: async (): Promise<AppSession> => {
       try {
-        return await authApi.session()
+        return await resolveSession()
       } catch {
-        return EMPTY_SESSION
+        return ANONYMOUS_SESSION
       }
     },
     staleTime: 60_000,

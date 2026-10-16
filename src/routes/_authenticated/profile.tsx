@@ -35,7 +35,7 @@ import { useCurrentUser } from '#/hooks/api/use-current-user'
 import { useUpdateProfile } from '#/hooks/api/use-me'
 import { ApiError } from '#/lib/api'
 import { CURRENCIES } from '#/lib/currencies'
-import { ssoLoginUrl } from '#/lib/sso'
+import { sso } from '#/lib/sso'
 
 export const Route = createFileRoute('/_authenticated/profile')({
   component: ProfilePage,
@@ -275,7 +275,6 @@ function ProfileSection() {
 
 function SsoAccountSection() {
   const { data: user } = useCurrentUser()
-  const sso = import.meta.env.VITE_SSO_URL || 'http://localhost:5173'
 
   return (
     <Card className="glass">
@@ -295,10 +294,10 @@ function SsoAccountSection() {
         </p>
         <div className="flex flex-wrap gap-2">
           <Button asChild variant="outline">
-            <a href={sso}>Open SSO account</a>
+            <a href={sso.accountUrl()}>Open SSO account</a>
           </Button>
           <Button asChild variant="ghost">
-            <a href={ssoLoginUrl('/profile')}>Re-authenticate</a>
+            <a href={sso.loginUrl('/profile')}>Re-authenticate</a>
           </Button>
         </div>
       </CardContent>

@@ -15,6 +15,11 @@ export default [
     },
   },
   {
-    ignores: ['eslint.config.js', 'prettier.config.js'],
+    ignores: [
+      'eslint.config.js',
+      'prettier.config.js',
+      // Vendored from the SSO repo (sdk/web) — linted there, never edited here.
+      'src/lib/sso/sso-client.ts',
+    ],
   },
 ]

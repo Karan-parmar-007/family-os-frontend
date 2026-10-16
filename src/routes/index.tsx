@@ -4,7 +4,6 @@ import { Logo } from "#/components/brand/logo"
 import { Donut } from "#/components/charts/donut"
 import { Sparkline } from "#/components/charts/sparkline"
 import { Button } from "#/components/ui/button"
-import { useCurrentUser } from "#/hooks/api/use-current-user"
 import { useSession } from "#/hooks/api/use-session"
 
 export const Route = createFileRoute("/")({
@@ -19,13 +18,17 @@ const SPEND_SEGMENTS = [
   { label: "Other", value: 25, color: "#f59e0b" },
 ]
 
-function LandingPage() {
-  const { data: user } = useCurrentUser()
-  const { data: session } = useSession()
+/** Holds CTA space while the SSO session resolves, so guests' buttons never flash for signed-in users. */
+function CtaPlaceholder({ className }: { className: string }) {
+  return <div aria-hidden className={`animate-pulse rounded-md bg-[#112240] ${className}`} />
+}
 
-  const isAuthenticated = Boolean(user || session?.authenticated)
-  const appDestination = session?.authenticated && session?.profile === null ? "/setup" : "/personal/dashboard"
-  const buttonLabel = session?.authenticated && session?.profile === null ? "Complete Setup" : "Go to Dashboard"
+function LandingPage() {
+  const { data: session, isPending: sessionPending } = useSession()
+
+  const isAuthenticated = Boolean(session?.authenticated)
+  const appDestination = session?.authenticated && session.profile === null ? "/setup" : "/personal/dashboard"
+  const buttonLabel = session?.authenticated && session.profile === null ? "Complete Setup" : "Go to Dashboard"
 
   return (
     <div className="min-h-screen bg-[#0a192f] text-[#ccd6f6] selection:bg-[#64ffda]/20 selection:text-[#64ffda]">
@@ -34,7 +37,9 @@ function LandingPage() {
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
           <Logo />
           <div className="flex items-center gap-3">
-            {isAuthenticated ? (
+            {sessionPending ? (
+              <CtaPlaceholder className="h-9 w-36" />
+            ) : isAuthenticated ? (
               <Button asChild className="bg-[#64ffda] text-[#0a192f] hover:bg-[#64ffda]/90 font-medium">
                 <Link to={appDestination}>{buttonLabel}</Link>
               </Button>
@@ -75,7 +80,9 @@ function LandingPage() {
               in one calm, minimal workspace your family actually uses.
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-4">
-              {isAuthenticated ? (
+              {sessionPending ? (
+                <CtaPlaceholder className="h-10 w-52" />
+              ) : isAuthenticated ? (
                 <Button
                   size="lg"
                   className="gap-2 bg-[#64ffda] text-[#0a192f] hover:bg-[#64ffda]/90 font-semibold"
@@ -226,7 +233,9 @@ function LandingPage() {
             Sign in with your unified SSO account to access your family finances.
           </p>
           <div className="mt-8 flex justify-center">
-            {isAuthenticated ? (
+            {sessionPending ? (
+              <CtaPlaceholder className="h-10 w-52" />
+            ) : isAuthenticated ? (
               <Button
                 size="lg"
                 className="bg-[#64ffda] text-[#0a192f] hover:bg-[#64ffda]/90 font-semibold"
