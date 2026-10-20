@@ -102,7 +102,20 @@ jobs:
             export FAMILYOS_FRONTEND_IMAGE="$IMAGE"
             export FAMILYOS_FRONTEND_TAG="$IMAGE_TAG"
 
-            docker compose pull "$SERVICE"
+            # containerd sometimes drops an in-progress layer
+            # ("rename .../ingest/.../data .../blobs/...: no such file or directory").
+            # Retry the pull; print disk space if it keeps failing.
+            pull_ok=0
+            for attempt in 1 2 3; do
+              if docker compose pull "$SERVICE"; then
+                pull_ok=1
+                break
+              fi
+              echo "Pull attempt ${attempt} failed."
+              df -h / /var/lib/docker /var/lib/containerd 2>/dev/null || df -h
+              sleep 15
+            done
+            [ "$pull_ok" = 1 ]
 
             OLD_IMAGE_ID="$(docker inspect -f '{{.Image}}' "$SERVICE" 2>/dev/null || true)"
 
