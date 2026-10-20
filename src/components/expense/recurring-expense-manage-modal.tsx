@@ -36,7 +36,7 @@ export function RecurringExpenseManageModal({
 }) {
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-h-[90vh] w-[calc(100vw-2rem)] overflow-y-auto sm:max-w-2xl">
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>Manage my recurring expense</DialogTitle>
           <DialogDescription>

@@ -541,7 +541,7 @@ export function PartPaymentDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] w-[calc(100vw-2rem)] overflow-y-auto sm:max-w-2xl">
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>Part payment — {debt?.debtName}</DialogTitle>
         </DialogHeader>
@@ -701,7 +701,7 @@ export function PartPaymentDialog({
           </div>
 
           {mode === 'REDUCE_BOTH' && (
-            <div className="order-4 grid grid-cols-2 gap-2">
+            <div className="order-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
               <div className="space-y-1">
                 <Label>Target EMI</Label>
                 <Input

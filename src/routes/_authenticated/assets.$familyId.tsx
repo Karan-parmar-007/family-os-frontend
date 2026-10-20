@@ -8,7 +8,11 @@ import { Input } from "#/components/ui/input"
 import { Label } from "#/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "#/components/ui/select"
 import { DocumentUploader } from "#/components/common/document-uploader"
+import { CategoryManageButton } from "#/components/common/category-manager"
 import { CategoryPicker } from "#/components/common/category-picker"
+import { LetEveryoneEditSection } from "#/components/forms/let-everyone-edit-section"
+import { PageBar } from "#/components/ui/list-pagination"
+import { usePagination } from "#/lib/api/pagination"
 import { useFamilyMembers } from "#/hooks/api/use-families"
 import { useAssets, useCreateAsset, useDeleteAsset, useUpdateAsset } from "#/hooks/api/use-assets"
 import { useScope } from "#/hooks/use-scope"
@@ -44,7 +48,8 @@ export const Route = createFileRoute("/_authenticated/assets/$familyId")({
 function AssetsPage() {
   const { familyId } = Route.useParams()
   const { scope } = useScope()
-  const { data, isLoading, isError, error } = useAssets(familyId, scope)
+  const paging = usePagination([familyId, scope.kind])
+  const { data, isLoading, isError, error } = useAssets(familyId, scope, paging.page, paging.pageSize)
   const createAsset = useCreateAsset(familyId, scope)
   const updateAsset = useUpdateAsset(familyId, scope)
   const deleteAsset = useDeleteAsset(familyId, scope)
@@ -54,7 +59,8 @@ function AssetsPage() {
   // Create state
   const [open, setOpen] = useState(false)
   const [assetName, setAssetName] = useState("")
-  const [type, setType] = useState("OTHER")
+  const [categoryId, setCategoryId] = useState<string | null>(null)
+  const [letEveryoneEdit, setLetEveryoneEdit] = useState(false)
   const [value, setValue] = useState("")
   const [notes, setNotes] = useState("")
   const [acquiredOn, setAcquiredOn] = useState("")
@@ -73,7 +79,7 @@ function AssetsPage() {
   const startEdit = (asset: AssetSummary) => {
     setEditingAsset(asset)
     setEditName(asset.assetName || "")
-    setEditType(asset.type || "OTHER")
+    setEditType(asset.categoryId || asset.type || "OTHER")
     setEditValue(String(asset.value ?? ""))
     setEditNotes(asset.notes || "")
     setEditOpen(true)
@@ -88,7 +94,9 @@ function AssetsPage() {
     createAsset.mutate(
       {
         asset_name: assetName.trim(),
-        type,
+        type: "OTHER",
+        category_id: categoryId,
+        let_everyone_edit: scope.kind === "family" ? letEveryoneEdit : false,
         value: parsedValue,
         notes: notes.trim() || undefined,
         acquired_on: acquiredOn || undefined,
@@ -101,7 +109,8 @@ function AssetsPage() {
           toast.success("Asset created")
           setOpen(false)
           setAssetName("")
-          setType("OTHER")
+          setCategoryId(null)
+          setLetEveryoneEdit(false)
           setValue("")
           setNotes("")
           setAcquiredOn("")
@@ -127,7 +136,7 @@ function AssetsPage() {
         body: {
           asset_name: editName.trim(),
           value: parsedValue,
-          type: editType,
+          category_id: editType && editType !== "OTHER" ? editType : undefined,
           notes: editNotes.trim() || undefined,
         } as any,
       },
@@ -179,23 +188,31 @@ function AssetsPage() {
               )}
             </p>
           </div>
-          <Button
-            size="sm"
-            onClick={() => {
-              setAssetName("")
-              setType("OTHER")
-              setValue("")
-              setNotes("")
-              setAcquiredOn("")
-              setInSomeoneName("FAMILY")
-              setDocumentId(null)
-              setDocumentName(null)
-              setOpen(true)
-            }}
-            className="bg-[#64ffda] text-[#0a192f] hover:bg-[#64ffda]/90 font-semibold shadow"
-          >
-            <PlusIcon className="mr-1.5 h-4 w-4" /> Add Asset
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <CategoryManageButton
+              scope={scope.kind === "personal" ? "PERSONAL" : "FAMILY"}
+              familyId={scope.kind === "personal" ? undefined : familyId}
+              types={["ASSET"]}
+            />
+            <Button
+              size="sm"
+              onClick={() => {
+                setAssetName("")
+                setCategoryId(null)
+                setLetEveryoneEdit(false)
+                setValue("")
+                setNotes("")
+                setAcquiredOn("")
+                setInSomeoneName("FAMILY")
+                setDocumentId(null)
+                setDocumentName(null)
+                setOpen(true)
+              }}
+              className="bg-[#64ffda] text-[#0a192f] hover:bg-[#64ffda]/90 font-semibold shadow"
+            >
+              <PlusIcon className="mr-1.5 h-4 w-4" /> Add Asset
+            </Button>
+          </div>
         </div>
 
         {isLoading && <p className="text-sm text-[#8892b0]">Loading assets…</p>}
@@ -314,11 +331,12 @@ function AssetsPage() {
             )
           })}
         </ul>
+        <PageBar state={paging} data={data} />
       </div>
 
       {/* CREATE ASSET MODAL - SINGLE COLUMN */}
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-h-[90vh] w-[calc(100vw-2rem)] overflow-y-auto sm:max-w-xl">
+        <DialogContent className="sm:max-w-xl">
           <DialogHeader>
             <DialogTitle>Create Asset</DialogTitle>
             <DialogDescription>Track physical assets — home, vehicle, gold, real estate with ownership deeds.</DialogDescription>
@@ -339,8 +357,8 @@ function AssetsPage() {
                 scope={scope.kind === "personal" ? "PERSONAL" : "FAMILY"}
                 categoryType="ASSET"
                 familyId={familyId}
-                value={type}
-                onSelect={(cat) => setType(cat.name)}
+                value={categoryId}
+                onSelect={(cat) => setCategoryId(cat?.id ?? null)}
                 label="Asset Category"
               />
             </div>
@@ -410,9 +428,12 @@ function AssetsPage() {
             />
 
             {scope.kind === "family" && (
-              <p className="text-xs text-[#8892b0]">
-                This creates a family asset. Manage personal assets under Personal → Assets.
-              </p>
+              <LetEveryoneEditSection
+                allowed
+                checked={letEveryoneEdit}
+                onCheckedChange={setLetEveryoneEdit}
+                allowedDescription="On: any family member can change it. Off: only you and the family head."
+              />
             )}
           </div>
           <DialogFooter className="border-t border-[#233554]/60 pt-3">
@@ -432,7 +453,7 @@ function AssetsPage() {
 
       {/* EDIT ASSET MODAL - SINGLE COLUMN */}
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
-        <DialogContent className="max-h-[90vh] w-[calc(100vw-2rem)] overflow-y-auto sm:max-w-xl">
+        <DialogContent className="sm:max-w-xl">
           <DialogHeader>
             <DialogTitle>Edit Asset</DialogTitle>
             <DialogDescription>Update the details or valuation of this asset.</DialogDescription>
@@ -454,7 +475,7 @@ function AssetsPage() {
                 categoryType="ASSET"
                 familyId={familyId}
                 value={editType}
-                onSelect={(cat) => setEditType(cat.name)}
+                onSelect={(cat) => setEditType(cat?.id ?? "")}
                 label="Asset Category"
               />
             </div>

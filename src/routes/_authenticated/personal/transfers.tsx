@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router"
 import { useMemo, useState } from "react"
+import { useQuery } from "@tanstack/react-query"
 import { AppShell } from "#/components/layout/app-shell"
 import { BentoCard, BentoGrid } from "#/components/bento/bento"
 import { Button } from "#/components/ui/button"
@@ -26,6 +27,10 @@ import {
 } from "#/hooks/api/use-transfers"
 import { useActiveFriends } from "#/hooks/api/use-friends"
 import { useFamilies } from "#/hooks/api/use-families"
+import { PageBar } from "#/components/ui/list-pagination"
+import { useDebounced } from "#/hooks/use-debounced"
+import { usePagination } from "#/lib/api/pagination"
+import { transfersApi } from "#/lib/api/endpoints/transfers"
 import { ApiError } from "#/lib/api"
 import { formatCurrency } from "#/lib/format"
 import { toast } from "sonner"
@@ -36,7 +41,8 @@ export const Route = createFileRoute("/_authenticated/personal/transfers")({
 })
 
 function PersonalTransfersPage() {
-  const { data, isLoading, isError } = usePersonalTransfers()
+  const paging = usePagination(["personal-transfers"])
+  const { data, isLoading, isError } = usePersonalTransfers(paging.page, paging.pageSize)
   const { data: friendsData } = useActiveFriends()
   const { data: familiesData } = useFamilies()
   const createTransfer = useCreatePersonalTransfer()
@@ -116,8 +122,15 @@ function PersonalTransfersPage() {
         endDate: isRecurring && endDate ? new Date(endDate).toISOString() : undefined,
       },
       {
-        onSuccess: () => {
-          toast.success(isRecurring ? "Recurring transfer scheduled" : "Transfer created — waiting for acceptance")
+        onSuccess: (created) => {
+          const waiting = created.status === "PENDING" || created.viaCode
+          toast.success(
+            isRecurring
+              ? "Recurring transfer scheduled"
+              : waiting
+                ? "Waiting for the receiver to accept"
+                : "Transfer sent",
+          )
           setOpen(false)
           resetForm()
         },
@@ -126,6 +139,14 @@ function PersonalTransfersPage() {
       },
     )
   }
+
+  const codeQuery = useDebounced(destCode.trim())
+  const codeLookup = useQuery({
+    queryKey: ["personal-transfer-lookup", codeQuery],
+    queryFn: () => transfersApi.lookupPersonal(codeQuery),
+    enabled: (transferKind === "personalCode" || transferKind === "familyCode") && codeQuery.length >= 4,
+    retry: false,
+  })
 
   const filtered = useMemo(() => {
     const items = data?.items ?? []
@@ -321,12 +342,13 @@ function PersonalTransfersPage() {
               )
             })}
           </ul>
+          <PageBar state={paging} data={data} />
         </BentoCard>
       </BentoGrid>
 
       {/* UNIFIED SINGLE-FORM CREATE MODAL */}
       <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) resetForm() }}>
-        <DialogContent className="max-h-[90vh] w-[calc(100vw-2rem)] overflow-y-auto sm:max-w-xl">
+        <DialogContent className="sm:max-w-xl">
           <DialogHeader>
             <DialogTitle>Personal Transfer</DialogTitle>
             <DialogDescription>Send from your personal savings to a friend or one of your families.</DialogDescription>
@@ -415,6 +437,16 @@ function PersonalTransfersPage() {
                 />
               </div>
             )}
+            {(transferKind === "personalCode" || transferKind === "familyCode") && codeLookup.data && (
+              <p className="text-xs text-[#64ffda]">
+                {codeLookup.data.name} · {codeLookup.data.instant ? "sends immediately" : "they need to accept"}
+              </p>
+            )}
+            {(transferKind === "personalCode" || transferKind === "familyCode") && codeLookup.isError && (
+              <p className="text-xs text-[#f87171]">
+                {codeLookup.error instanceof Error ? codeLookup.error.message : "Code not found"}
+              </p>
+            )}
 
             <div className="space-y-1">
               <Label className="text-xs text-[#8892b0]">Amount</Label>
@@ -439,8 +471,8 @@ function PersonalTransfersPage() {
               />
             </div>
 
-            <div className="flex items-center justify-between rounded-xl border border-[#233554] bg-[#0a192f]/60 p-3">
-              <div>
+            <div className="flex items-start justify-between gap-3 rounded-xl border border-[#233554] bg-[#0a192f]/60 p-3">
+              <div className="min-w-0">
                 <p className="text-sm font-semibold text-[#ccd6f6]">Recurring Transfer</p>
                 <p className="text-xs text-[#8892b0]">Automatically schedule recurring personal transfers.</p>
               </div>

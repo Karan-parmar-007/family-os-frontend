@@ -5,8 +5,11 @@ import { Label } from '#/components/ui/label'
 import { useFamilyMembers } from '#/hooks/api/use-families'
 import { apiFetch } from '#/lib/api/client'
 import { documentsApi } from '#/lib/api/endpoints/documents'
-import { FrequencySelector } from '#/components/common/frequency-selector'
+import { FrequencySelector, type Schedule } from '#/components/common/frequency-selector'
+import { PageBar } from '#/components/ui/list-pagination'
+import { usePagination } from '#/lib/api/pagination'
 import { DocumentUploader } from '#/components/common/document-uploader'
+import { CategoryManageButton } from '#/components/common/category-manager'
 import { CategoryPicker } from '#/components/common/category-picker'
 import { FosModalOverlay } from '#/components/ui/fos-modal'
 import { toast } from 'sonner'
@@ -45,6 +48,7 @@ interface Debt {
 interface DebtListResponse {
   items: Debt[]
   total: number
+  totalPages: number
 }
 
 interface DebtsWorkspaceProps {
@@ -61,7 +65,9 @@ export function DebtsWorkspace({ familyId, scope: scopeProp, hideTitle }: DebtsW
   const members = membersData?.items || []
 
   const [debts, setDebts] = useState<Debt[]>([])
+  const [listMeta, setListMeta] = useState({ total: 0, totalPages: 0 })
   const [loading, setLoading] = useState(true)
+  const paging = usePagination([familyId, scopeStr])
 
   // Dialogs
   const [createOpen, setCreateOpen] = useState(false)
@@ -79,7 +85,7 @@ export function DebtsWorkspace({ familyId, scope: scopeProp, hideTitle }: DebtsW
   const [ownerUserId, setOwnerUserId] = useState('')
   const [hasEmi, setHasEmi] = useState(false)
   const [emiAmount, setEmiAmount] = useState('')
-  const [frequency, setFrequency] = useState('MONTHLY')
+  const [schedule, setSchedule] = useState<Schedule>({ frequency: 'MONTHLY', everyN: 1 })
   const [nextEmiDate, setNextEmiDate] = useState('')
   const [addEmiToPaid, setAddEmiToPaid] = useState(true)
   const [documentId, setDocumentId] = useState<string | null>(null)
@@ -89,13 +95,14 @@ export function DebtsWorkspace({ familyId, scope: scopeProp, hideTitle }: DebtsW
   const fetchDebts = async () => {
     setLoading(true)
     try {
-      const url = `/api/familyos/debts?scope=${scopeStr}${scopeStr === 'FAMILY' ? `&family_id=${familyId}` : ''}`
+      const url = `/api/familyos/debts?scope=${scopeStr}&page=${paging.page}&page_size=${paging.pageSize}${scopeStr === 'FAMILY' ? `&family_id=${familyId}` : ''}`
       const catUrl = `/api/familyos/categories?scope=${scopeStr}&category_type=DEBT${scopeStr === 'FAMILY' ? `&family_id=${familyId}` : ''}`
       const [res, catsRes] = await Promise.all([
         apiFetch<DebtListResponse>(url),
         apiFetch<{ items: { id: string; name: string }[] }>(catUrl).catch(() => ({ items: [] })),
       ])
       setDebts(res.items || [])
+      setListMeta({ total: res.total || 0, totalPages: res.totalPages || 0 })
       const cMap: Record<string, string> = {}
       ;(catsRes.items || []).forEach((c) => { cMap[c.id] = c.name })
       setCategoriesMap(cMap)
@@ -108,7 +115,7 @@ export function DebtsWorkspace({ familyId, scope: scopeProp, hideTitle }: DebtsW
 
   useEffect(() => {
     fetchDebts()
-  }, [familyId, scopeStr])
+  }, [familyId, scopeStr, paging.page, paging.pageSize])
 
   const handleCreateDebt = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -137,7 +144,8 @@ export function DebtsWorkspace({ familyId, scope: scopeProp, hideTitle }: DebtsW
           amountPaid: parsedPaid,
           hasEmi,
           emiAmount: hasEmi && emiAmount ? parseFloat(emiAmount) : null,
-          frequency: hasEmi ? frequency.toUpperCase() : null,
+          frequency: hasEmi ? schedule.frequency : null,
+          everyN: hasEmi ? schedule.everyN : 1,
           nextEmiDate: hasEmi && nextEmiDate ? new Date(nextEmiDate).toISOString() : null,
           addEmiToPaid,
           documentId: documentId || null,
@@ -196,7 +204,7 @@ export function DebtsWorkspace({ familyId, scope: scopeProp, hideTitle }: DebtsW
     setOwnerUserId('')
     setHasEmi(false)
     setEmiAmount('')
-    setFrequency('MONTHLY')
+    setSchedule({ frequency: 'MONTHLY', everyN: 1 })
     setNextEmiDate('')
     setAddEmiToPaid(true)
     setDocumentId(null)
@@ -234,15 +242,24 @@ export function DebtsWorkspace({ familyId, scope: scopeProp, hideTitle }: DebtsW
             </p>
           </div>
 
-          <Button
-            onClick={() => {
-              resetForm()
-              setCreateOpen(true)
-            }}
-            className="bg-[#64ffda] text-[#0a192f] hover:bg-[#64ffda]/90 font-semibold shadow transition "
-          >
-            <PlusIcon className="mr-1.5 h-4 w-4" /> Add Debt Tracker
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <CategoryManageButton scope={scopeStr} familyId={isPersonal ? undefined : familyId} types={['DEBT']} />
+            <Button
+              onClick={() => {
+                resetForm()
+                setCreateOpen(true)
+              }}
+              className="bg-[#64ffda] text-[#0a192f] hover:bg-[#64ffda]/90 font-semibold shadow transition "
+            >
+              <PlusIcon className="mr-1.5 h-4 w-4" /> Add Debt Tracker
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {hideTitle && (
+        <div className="flex justify-end">
+          <CategoryManageButton scope={scopeStr} familyId={isPersonal ? undefined : familyId} types={['DEBT']} />
         </div>
       )}
 
@@ -399,11 +416,12 @@ export function DebtsWorkspace({ familyId, scope: scopeProp, hideTitle }: DebtsW
           })}
         </div>
       )}
+      <PageBar state={paging} data={listMeta.total ? listMeta : undefined} />
 
       {/* Create Debt Modal */}
       {createOpen && (
         <FosModalOverlay>
-          <div className="w-full max-w-xl rounded-2xl border border-[#233554]/90 bg-[#112240]/95 p-6 sm:p-7 text-[#ccd6f6] shadow-[0_25px_60px_rgba(2,12,27,0.85)] ring-1 ring-white/5 max-h-[88vh] overflow-y-auto my-auto">
+          <div className="my-auto w-full min-w-0 max-w-xl max-h-[calc(100dvh-1.5rem)] overflow-y-auto rounded-2xl border border-[#233554]/90 bg-[#112240]/95 p-4 text-[#ccd6f6] shadow-[0_25px_60px_rgba(2,12,27,0.85)] ring-1 ring-white/5 sm:max-h-[88vh] sm:p-7">
             <h2 className="text-xl font-bold text-[#e6f1ff] tracking-tight">Add Debt Tracker</h2>
             <form onSubmit={handleCreateDebt} className="mt-4 space-y-4">
               <div>
@@ -417,7 +435,7 @@ export function DebtsWorkspace({ familyId, scope: scopeProp, hideTitle }: DebtsW
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div>
                   <Label className="text-xs text-[#8892b0]">Full Total Amount</Label>
                   <Input
@@ -446,7 +464,7 @@ export function DebtsWorkspace({ familyId, scope: scopeProp, hideTitle }: DebtsW
               {!isPersonal && (
                 <div>
                   <Label className="text-xs text-[#8892b0]">Debt Owner</Label>
-                  <div className="mt-1.5 flex gap-2">
+                  <div className="mt-1.5 flex flex-col gap-2 sm:flex-row">
                     <button
                       type="button"
                       onClick={() => setOwnerType('FAMILY')}
@@ -491,7 +509,7 @@ export function DebtsWorkspace({ familyId, scope: scopeProp, hideTitle }: DebtsW
 
               {/* Recurring EMI Mapping Toggle */}
               <div className="rounded-xl border border-[#233554] bg-[#0a192f] p-4 space-y-3">
-                <div className="flex items-center justify-between">
+                <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="text-sm font-semibold text-[#ccd6f6]">Map Recurring EMI Expense</p>
                     <p className="text-xs text-[#8892b0]">
@@ -502,7 +520,7 @@ export function DebtsWorkspace({ familyId, scope: scopeProp, hideTitle }: DebtsW
                     type="checkbox"
                     checked={hasEmi}
                     onChange={(e) => setHasEmi(e.target.checked)}
-                    className="h-4 w-4 rounded border-[#233554] bg-[#112240] text-[#64ffda] focus:ring-[#64ffda]"
+                    className="mt-1 h-4 w-4 shrink-0 rounded border-[#233554] bg-[#112240] text-[#64ffda] focus:ring-[#64ffda]"
                   />
                 </div>
 
@@ -522,8 +540,8 @@ export function DebtsWorkspace({ familyId, scope: scopeProp, hideTitle }: DebtsW
                     </div>
 
                     <FrequencySelector
-                      value={frequency}
-                      onChange={setFrequency}
+                      value={schedule}
+                      onChange={setSchedule}
                       label="EMI Cadence / Frequency"
                     />
 
@@ -561,8 +579,8 @@ export function DebtsWorkspace({ familyId, scope: scopeProp, hideTitle }: DebtsW
                 familyId={familyId}
                 value={categoryName}
                 onSelect={(cat) => {
-                  setCategoryId(cat.id)
-                  setCategoryName(cat.name)
+                  setCategoryId(cat?.id ?? null)
+                  setCategoryName(cat?.name ?? '')
                 }}
                 label="Debt Category"
               />
@@ -596,7 +614,7 @@ export function DebtsWorkspace({ familyId, scope: scopeProp, hideTitle }: DebtsW
                 </div>
               )}
 
-              <div className="flex justify-end gap-2 pt-3 border-t border-[#233554]/60">
+              <div className="form-actions border-t border-[#233554]/60 pt-3">
                 <Button
                   type="button"
                   variant="outline"
@@ -617,7 +635,7 @@ export function DebtsWorkspace({ familyId, scope: scopeProp, hideTitle }: DebtsW
       {/* Quick Edit Amount Paid Modal */}
       {editDebt && (
         <FosModalOverlay>
-          <div className="w-full max-w-md rounded-2xl border border-[#233554]/90 bg-[#112240]/95 p-6 text-[#ccd6f6] shadow-[0_25px_60px_rgba(2,12,27,0.85)] ring-1 ring-white/5 max-h-[85vh] overflow-y-auto my-auto">
+          <div className="my-auto w-full min-w-0 max-w-md max-h-[calc(100dvh-1.5rem)] overflow-y-auto rounded-2xl border border-[#233554]/90 bg-[#112240]/95 p-4 text-[#ccd6f6] shadow-[0_25px_60px_rgba(2,12,27,0.85)] ring-1 ring-white/5 sm:p-6">
             <h2 className="text-xl font-bold text-[#e6f1ff] tracking-tight">Update Amount Paid</h2>
             <p className="mt-1 text-sm text-[#8892b0]">
               Updating amount paid for <strong className="text-[#ccd6f6]">{editDebt.name}</strong> (Total: ${editDebt.amount.toFixed(2)}).
@@ -638,7 +656,7 @@ export function DebtsWorkspace({ familyId, scope: scopeProp, hideTitle }: DebtsW
                 </p>
               </div>
 
-              <div className="flex justify-end gap-2 pt-2 border-t border-[#233554]/60">
+              <div className="form-actions border-t border-[#233554]/60 pt-2">
                 <Button
                   type="button"
                   variant="outline"

@@ -16,14 +16,14 @@ export function LetEveryoneEditSection({
   disallowedDescription = 'Only available when the full amount goes to this family only.',
 }: Props) {
   return (
-    <div className="flex items-center justify-between gap-3 rounded-xl border border-border p-3">
-      <div>
+    <div className="flex items-start justify-between gap-3 rounded-xl border border-border p-3">
+      <div className="min-w-0">
         <p className="text-sm font-medium">Let everyone edit this</p>
         <p className="text-xs text-muted-foreground">
           {allowed ? allowedDescription : disallowedDescription}
         </p>
       </div>
-      <Switch disabled={!allowed} checked={checked} onCheckedChange={onCheckedChange} />
+      <Switch disabled={!allowed} checked={checked} onCheckedChange={onCheckedChange} className="mt-0.5 shrink-0" />
     </div>
   )
 }

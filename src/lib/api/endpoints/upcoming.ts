@@ -8,20 +8,24 @@ export const upcomingApi = {
       horizonDays?: number
       scope?: string
       subFamilyId?: string
+      page?: number
+      pageSize?: number
     } = {},
   ) {
     const params: Record<string, string | number> = {}
     if (options.horizonDays != null) params.horizon_days = options.horizonDays
     if (options.scope) params.scope = options.scope
     if (options.subFamilyId) params.sub_family_id = options.subFamilyId
+    if (options.page != null) params.page = options.page
+    if (options.pageSize != null) params.page_size = options.pageSize
     return apiFetch<UpcomingResponse>(`/api/familyos/families/${familyId}/upcoming`, {
       params,
     })
   },
 
-  listPersonal(horizonDays = 90) {
+  listPersonal(horizonDays = 90, page = 1, pageSize = 10) {
     return apiFetch<UpcomingResponse>('/api/familyos/upcoming', {
-      params: { horizon_days: horizonDays },
+      params: { horizon_days: horizonDays, page, page_size: pageSize },
     })
   },
 }

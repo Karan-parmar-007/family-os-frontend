@@ -17,6 +17,8 @@ import {
   useRequestFriend,
 } from '#/hooks/api/use-friends'
 import { useCurrentUser } from '#/hooks/api/use-current-user'
+import { PageBar } from '#/components/ui/list-pagination'
+import { usePagination } from '#/lib/api/pagination'
 import { ApiError } from '#/lib/api'
 
 export const Route = createFileRoute('/_authenticated/personal/friends')({
@@ -26,7 +28,8 @@ export const Route = createFileRoute('/_authenticated/personal/friends')({
 function FriendsPage() {
   const { data: user } = useCurrentUser()
   const { data: codeData, isLoading: codeLoading } = useFriendCode()
-  const { data, isLoading, isError } = useFriends()
+  const paging = usePagination()
+  const { data, isLoading, isError } = useFriends(paging.page, paging.pageSize)
   const requestFriend = useRequestFriend()
   const confirmFriend = useConfirmFriend()
   const rejectFriend = useRejectFriend()
@@ -205,6 +208,7 @@ function FriendsPage() {
               empty="No friends yet — share your code or send a request."
               items={active}
             />
+            <PageBar state={paging} data={data} className="col-span-full" />
           </>
         )}
       </BentoGrid>

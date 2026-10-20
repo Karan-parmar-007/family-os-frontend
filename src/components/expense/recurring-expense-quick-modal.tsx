@@ -236,7 +236,7 @@ export function RecurringExpenseQuickModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-h-[90vh] w-[calc(100vw-2rem)] overflow-y-auto sm:max-w-2xl">
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>Add recurring expense</DialogTitle>
           <DialogDescription>
@@ -419,7 +419,7 @@ export function RecurringExpenseQuickModal({
                 <p className="text-xs text-muted-foreground">
                   Enter at least one — years, months, or days. You can combine them (e.g. 1 month and 6 days).
                 </p>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-1 gap-2 min-[420px]:grid-cols-3">
                   <div className="space-y-1">
                     <Label className="text-xs">Years</Label>
                     <Input
@@ -503,7 +503,7 @@ export function RecurringExpenseQuickModal({
                   <Label className="text-xs text-muted-foreground">
                     Or limit access to specific members
                   </Label>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 gap-2 min-[420px]:grid-cols-2">
                     {members.map((m) => {
                       const checked = form.doc_viewer_user_ids.includes(m?.id || '')
                       return (

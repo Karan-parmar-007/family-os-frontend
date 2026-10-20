@@ -1,5 +1,6 @@
 import { createFileRoute, isRedirect, redirect } from "@tanstack/react-router"
 import { useMemo, useState } from "react"
+import { useQuery } from "@tanstack/react-query"
 import { AppShell } from "#/components/layout/app-shell"
 import { BentoCard, BentoGrid } from "#/components/bento/bento"
 import { Button } from "#/components/ui/button"
@@ -13,6 +14,10 @@ import { Switch } from "#/components/ui/switch"
 import { useAcceptTransfer, useCancelTransfer, useCreateTransfer, useDeclineTransfer, useTransfers } from "#/hooks/api/use-transfers"
 import { useFamilies, useFamilyMembers } from "#/hooks/api/use-families"
 import { useRelationships } from "#/hooks/api/use-relationships"
+import { PageBar } from "#/components/ui/list-pagination"
+import { useDebounced } from "#/hooks/use-debounced"
+import { usePagination } from "#/lib/api/pagination"
+import { transfersApi } from "#/lib/api/endpoints/transfers"
 import { ApiError, familiesApi, isNetworkError } from "#/lib/api"
 import { formatCurrency } from "#/lib/format"
 import { toast } from "sonner"
@@ -46,14 +51,15 @@ function TransfersPage() {
   const { data: familiesData } = useFamilies()
   const { data: relData } = useRelationships(familyId)
   const { data: membersData } = useFamilyMembers(familyId)
-  const { data, isLoading, isError } = useTransfers(familyId)
+  const [tab, setTab] = useState<"all" | "sent" | "received">("all")
+  const paging = usePagination([familyId, tab])
+  const { data, isLoading, isError } = useTransfers(familyId, paging.page, paging.pageSize)
   const createTransfer = useCreateTransfer(familyId)
   const cancelTransfer = useCancelTransfer(familyId)
   const acceptTransfer = useAcceptTransfer(familyId)
   const declineTransfer = useDeclineTransfer(familyId)
 
   const [open, setOpen] = useState(false)
-  const [tab, setTab] = useState<"all" | "sent" | "received">("all")
   const [transferKind, setTransferKind] = useState<"family" | "member" | "code" | "personalCode">("family")
   const [toFamilyId, setToFamilyId] = useState("")
   const [toUserId, setToUserId] = useState("")
@@ -128,8 +134,15 @@ function TransfersPage() {
         endDate: isRecurring && endDate ? new Date(endDate).toISOString() : undefined,
       },
       {
-        onSuccess: () => {
-          toast.success(isRecurring ? "Recurring transfer scheduled" : "Transfer offer sent — waiting for accept")
+        onSuccess: (created) => {
+          const waiting = created.status === "PENDING" || created.viaCode
+          toast.success(
+            isRecurring
+              ? "Recurring transfer scheduled"
+              : waiting
+                ? "Waiting for the receiver to accept"
+                : "Transfer sent",
+          )
           setOpen(false)
           resetForm()
         },
@@ -137,6 +150,14 @@ function TransfersPage() {
       },
     )
   }
+
+  const codeQuery = useDebounced(destCode.trim())
+  const codeLookup = useQuery({
+    queryKey: ["transfer-lookup", familyId, codeQuery],
+    queryFn: () => transfersApi.lookup(familyId, codeQuery),
+    enabled: (transferKind === "code" || transferKind === "personalCode") && codeQuery.length >= 4,
+    retry: false,
+  })
 
   const filtered = useMemo(() => {
     const items = data?.items ?? []
@@ -332,12 +353,13 @@ function TransfersPage() {
               )
             })}
           </ul>
+          <PageBar state={paging} data={data} />
         </BentoCard>
       </BentoGrid>
 
       {/* UNIFIED SINGLE-FORM CREATE MODAL */}
       <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) resetForm() }}>
-        <DialogContent className="max-h-[90vh] w-[calc(100vw-2rem)] overflow-y-auto sm:max-w-xl">
+        <DialogContent className="sm:max-w-xl">
           <DialogHeader>
             <DialogTitle>Create Transfer</DialogTitle>
             <DialogDescription>Send family savings to a linked family, personal pool, or via link codes.</DialogDescription>
@@ -398,6 +420,16 @@ function TransfersPage() {
                   placeholder={transferKind === "code" ? "Enter target family code" : "e.g. 12345678"}
                   className="bg-[#0a192f] border-[#233554] text-[#ccd6f6] font-mono focus:border-[#64ffda]"
                 />
+                {codeLookup.data && (
+                  <p className="text-xs text-[#64ffda]">
+                    {codeLookup.data.name} · {codeLookup.data.instant ? "sends immediately" : "they need to accept"}
+                  </p>
+                )}
+                {codeLookup.isError && (
+                  <p className="text-xs text-[#f87171]">
+                    {codeLookup.error instanceof Error ? codeLookup.error.message : "Code not found"}
+                  </p>
+                )}
               </div>
             )}
 
@@ -440,8 +472,8 @@ function TransfersPage() {
               />
             </div>
 
-            <div className="flex items-center justify-between rounded-xl border border-[#233554] bg-[#0a192f]/60 p-3">
-              <div>
+            <div className="flex items-start justify-between gap-3 rounded-xl border border-[#233554] bg-[#0a192f]/60 p-3">
+              <div className="min-w-0">
                 <p className="text-sm font-semibold text-[#ccd6f6]">Recurring Transfer</p>
                 <p className="text-xs text-[#8892b0]">Automatically schedule ongoing transfers.</p>
               </div>

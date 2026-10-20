@@ -15,6 +15,8 @@ import {
 } from '#/components/ui/dialog'
 import { Input } from '#/components/ui/input'
 import { Label } from '#/components/ui/label'
+import { PageBar } from '#/components/ui/list-pagination'
+import { usePagination } from '#/lib/api/pagination'
 import { useUpcoming } from '#/hooks/api/use-upcoming'
 import { useMyScheduledJobs, useScheduledJobAction } from '#/hooks/api/use-scheduler'
 import { useScope } from '#/hooks/use-scope'
@@ -65,7 +67,8 @@ function UpcomingPage() {
   const { scope } = useScope()
   
   const [horizon, setHorizon] = useState<number>(90)
-  const { data, isLoading } = useUpcoming(familyId, scope, horizon)
+  const paging = usePagination(horizon)
+  const { data, isLoading } = useUpcoming(familyId, scope, horizon, paging.page, paging.pageSize)
   const { data: myJobs } = useMyScheduledJobs(familyId, 1, 10)
   const jobAction = useScheduledJobAction(familyId)
   const qc = useQueryClient()
@@ -176,6 +179,7 @@ function UpcomingPage() {
               </p>
             )}
           </ul>
+          <PageBar state={paging} data={data} />
         </BentoCard>
         <BentoCard className="col-span-full">
           <h2 className="text-lg font-semibold">My pending confirmations</h2>

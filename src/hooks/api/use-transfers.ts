@@ -2,10 +2,10 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { transfersApi, type TransferCreateBody } from '#/lib/api/endpoints/transfers'
 import { queryKeys } from '#/lib/query/keys'
 
-export function useTransfers(familyId: string) {
+export function useTransfers(familyId: string, page = 1, pageSize = 10) {
   return useQuery({
-    queryKey: queryKeys.transfers(familyId),
-    queryFn: () => transfersApi.list(familyId),
+    queryKey: [...queryKeys.transfers(familyId), page, pageSize],
+    queryFn: () => transfersApi.list(familyId, page, pageSize),
     enabled: !!familyId,
     retry: false,
   })
@@ -62,10 +62,10 @@ export function useReverseTransfer(familyId: string) {
   })
 }
 
-export function usePersonalTransfers() {
+export function usePersonalTransfers(page = 1, pageSize = 10) {
   return useQuery({
-    queryKey: queryKeys.personalTransfers,
-    queryFn: () => transfersApi.listPersonal(),
+    queryKey: [...queryKeys.personalTransfers, page, pageSize],
+    queryFn: () => transfersApi.listPersonal(page, pageSize),
     retry: false,
   })
 }

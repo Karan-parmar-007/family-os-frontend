@@ -4,6 +4,8 @@ import { AppShell } from '#/components/layout/app-shell'
 import { Button } from '#/components/ui/button'
 import { upcomingApi } from '#/lib/api/endpoints/upcoming'
 import { useQuery } from '@tanstack/react-query'
+import { PageBar } from '#/components/ui/list-pagination'
+import { usePagination } from '#/lib/api/pagination'
 import { formatCurrency } from '#/lib/format'
 
 export const Route = createFileRoute('/_authenticated/personal/upcoming')({
@@ -11,9 +13,10 @@ export const Route = createFileRoute('/_authenticated/personal/upcoming')({
 })
 
 function PersonalUpcomingPage() {
+  const paging = usePagination()
   const { data, isLoading } = useQuery({
-    queryKey: ['personal', 'upcoming', 90],
-    queryFn: () => upcomingApi.listPersonal(90),
+    queryKey: ['personal', 'upcoming', 90, paging.page, paging.pageSize],
+    queryFn: () => upcomingApi.listPersonal(90, paging.page, paging.pageSize),
     staleTime: 60_000,
   })
 
@@ -56,6 +59,7 @@ function PersonalUpcomingPage() {
           <li className="text-sm text-muted-foreground">Nothing upcoming.</li>
         )}
       </ul>
+      <PageBar state={paging} data={data} />
     </AppShell>
   )
 }

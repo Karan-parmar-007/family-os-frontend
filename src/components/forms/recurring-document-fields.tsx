@@ -59,8 +59,8 @@ export function RecurringDocumentFields({
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Document settings
           </p>
-          <div className="flex items-center justify-between gap-3">
-            <div>
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
               <p className="text-sm font-medium">Show document to all members</p>
               <p className="text-xs text-muted-foreground">
                 When on, everyone in the linked families can view the attached document.
@@ -77,7 +77,7 @@ export function RecurringDocumentFields({
               <Label className="text-xs text-muted-foreground">
                 Or limit access to specific members
               </Label>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 gap-2 min-[420px]:grid-cols-2">
                 {members.map((m) => {
                   const memberId = m?.id || ''
                   const checked = form.doc_viewer_user_ids.includes(memberId)

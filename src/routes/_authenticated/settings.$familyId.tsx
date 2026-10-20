@@ -17,6 +17,9 @@ import { z } from 'zod'
 import { Loader2Icon, UserPlusIcon, SettingsIcon, UsersIcon, ChevronLeftIcon, LinkIcon } from 'lucide-react'
 import { toast } from 'sonner'
 import { AppShell } from '#/components/layout/app-shell'
+import { ListPagination } from '#/components/ui/list-pagination'
+import { paginateLocal, usePagination } from '#/lib/api/pagination'
+import { CategoryManager } from '#/components/common/category-manager'
 import { Button } from '#/components/ui/button'
 import { Badge } from '#/components/ui/badge'
 import {
@@ -121,6 +124,7 @@ function FamilySettingsPage() {
                 isFamilyHead={isFamilyHead}
                 linkCode={family.linkCode || ''}
               />
+              <CategoryManager scope="FAMILY" familyId={familyId} className="xl:col-span-2" />
             </>
           )}
         </div>
@@ -258,6 +262,8 @@ function FamilyMembersSection({
 }) {
   const { data: membersData, isLoading: loadingMembers, isError, error } = useFamilyMembers(familyId)
   const members = membersData?.items ?? []
+  const pg = usePagination()
+  const paged = paginateLocal(members, pg.page, pg.pageSize)
 
   return (
     <Card className="glass">
@@ -284,7 +290,7 @@ function FamilyMembersSection({
           <p className="text-sm text-muted-foreground">No members found for this household.</p>
         ) : (
           <div className="divide-y divide-border rounded-xl border bg-background/30 p-4">
-            {members.map((m) => (
+            {paged.items.map((m) => (
               <div key={m.id} className="flex items-center justify-between py-3 first:pt-0 last:pb-0">
                 <div>
                   <p className="font-medium text-sm">{m.name}</p>
@@ -302,6 +308,7 @@ function FamilyMembersSection({
             ))}
           </div>
         )}
+        <LocalPageBar pg={pg} paged={paged} />
       </CardContent>
     </Card>
   )
@@ -411,6 +418,8 @@ function FamilyRelationshipsSection({
 
   const items = data?.items ?? []
   const [otherFamilyCode, setOtherFamilyCode] = useState('')
+  const pg = usePagination()
+  const paged = paginateLocal(items, pg.page, pg.pageSize)
 
   const isPendingAny =
     acceptRelationship.isPending ||
@@ -510,7 +519,7 @@ function FamilyRelationshipsSection({
           <p className="text-sm text-muted-foreground">No relationships yet.</p>
         ) : (
           <div className="space-y-2">
-            {items.map((item) => {
+            {paged.items.map((item) => {
               const isInitiator = item.initiatedByFamilyId === familyId
               const canRespond = isFamilyHead && item.status === 'PENDING' && !isInitiator
               const canRemove = isFamilyHead && item.status === 'ACTIVE'
@@ -586,6 +595,7 @@ function FamilyRelationshipsSection({
             })}
           </div>
         )}
+        <LocalPageBar pg={pg} paged={paged} />
       </CardContent>
     </Card>
   )
@@ -675,10 +685,12 @@ function JoinRequestsInboxSection({ familyId, isFamilyHead }: { familyId: string
   const { data, isLoading } = useFamilyJoinRequests(familyId, isFamilyHead)
   const acceptReq = useAcceptJoinRequest(familyId)
   const declineReq = useDeclineJoinRequest(familyId)
+  const pg = usePagination()
 
   if (!isFamilyHead) return null
 
   const items = data?.items ?? []
+  const paged = paginateLocal(items, pg.page, pg.pageSize)
 
   return (
     <Card className="border-navy-800 bg-navy-900/60">
@@ -706,7 +718,7 @@ function JoinRequestsInboxSection({ familyId, isFamilyHead }: { familyId: string
         )}
         {!isLoading && items.length > 0 && (
           <div className="space-y-3">
-            {items.map((req) => (
+            {paged.items.map((req) => (
               <div
                 key={req.id}
                 className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl border border-navy-800 bg-navy-950/70"
@@ -753,7 +765,27 @@ function JoinRequestsInboxSection({ familyId, isFamilyHead }: { familyId: string
             ))}
           </div>
         )}
+        <LocalPageBar pg={pg} paged={paged} />
       </CardContent>
     </Card>
+  )
+}
+
+function LocalPageBar({
+  pg,
+  paged,
+}: {
+  pg: ReturnType<typeof usePagination>
+  paged: { total: number; totalPages: number }
+}) {
+  return (
+    <ListPagination
+      page={pg.page}
+      pageSize={pg.pageSize}
+      total={paged.total}
+      totalPages={paged.totalPages}
+      onPageChange={pg.setPage}
+      onPageSizeChange={pg.setPageSize}
+    />
   )
 }

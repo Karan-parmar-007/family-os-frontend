@@ -28,11 +28,21 @@ const config = defineConfig({
     devtools(),
     nitro({
       devProxy: {
+        // Nitro matches these exactly. The wildcard is what forwards
+        // /api/auth/session and /api/familyos/* the way Caddy does in prod.
         '/api/auth': {
           target: 'http://localhost:8000',
           changeOrigin: true,
         },
+        '/api/auth/**': {
+          target: 'http://localhost:8000',
+          changeOrigin: true,
+        },
         '/api/familyos': {
+          target: 'http://localhost:8003',
+          changeOrigin: true,
+        },
+        '/api/familyos/**': {
           target: 'http://localhost:8003',
           changeOrigin: true,
         },

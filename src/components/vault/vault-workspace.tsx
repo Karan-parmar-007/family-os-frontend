@@ -2,7 +2,11 @@ import { useState, useEffect, useCallback } from 'react'
 import { Button } from '#/components/ui/button'
 import { Input } from '#/components/ui/input'
 import { Label } from '#/components/ui/label'
+import { CategoryManageButton } from '#/components/common/category-manager'
 import { CategoryPicker } from '#/components/common/category-picker'
+import { LetEveryoneEditSection } from '#/components/forms/let-everyone-edit-section'
+import { PageBar } from '#/components/ui/list-pagination'
+import { usePagination } from '#/lib/api/pagination'
 import { FosModalOverlay } from '#/components/ui/fos-modal'
 import { DocumentUploader } from '#/components/common/document-uploader'
 import { useFamilyMembers } from '#/hooks/api/use-families'
@@ -33,7 +37,10 @@ export interface VaultItem {
   ownerUserId: string
   kind: 'PASSWORD' | 'FILE' | 'DOCUMENT'
   title: string
-  category: string
+  category?: string | null
+  categoryId?: string | null
+  letEveryoneEdit?: boolean
+  canEdit?: boolean
   forPartyType: 'MEMBER' | 'FAMILY' | 'SELF'
   forUserId?: string | null
   documentId?: string | null
@@ -46,8 +53,12 @@ export interface VaultItem {
 
 interface VaultListResponse {
   items: VaultItem[]
+  total: number
+  totalPages: number
   pinConfigured: boolean
   isUnlocked: boolean
+  passwordCount?: number
+  documentCount?: number
 }
 
 interface VaultWorkspaceProps {
@@ -66,10 +77,14 @@ export function VaultWorkspace({ scope, familyId }: VaultWorkspaceProps) {
   const [pinConfigured, setPinConfigured] = useState<boolean>(true)
   const [isUnlocked, setIsUnlocked] = useState<boolean>(false)
   const [items, setItems] = useState<VaultItem[]>([])
+  const [listMeta, setListMeta] = useState({ total: 0, totalPages: 0 })
+  const [passwordCount, setPasswordCount] = useState(0)
+  const [documentCount, setDocumentCount] = useState(0)
   const [, setLoading] = useState<boolean>(true)
 
   // Active vault tab: 'passwords' | 'documents'
   const [activeTab, setActiveTab] = useState<'passwords' | 'documents'>('passwords')
+  const paging = usePagination([scope, familyId, activeTab])
 
   // Modals & PIN
   const [pinInput, setPinInput] = useState('')
@@ -84,7 +99,8 @@ export function VaultWorkspace({ scope, familyId }: VaultWorkspaceProps) {
 
   // Form state: Password
   const [pwdTitle, setPwdTitle] = useState('')
-  const [pwdCategory, setPwdCategory] = useState('Banking & Finance')
+  const [pwdCategoryId, setPwdCategoryId] = useState<string | null>(null)
+  const [pwdShare, setPwdShare] = useState(false)
   const [pwdParty, setPwdParty] = useState<'FAMILY' | 'MEMBER' | 'SELF'>(isPersonal ? 'SELF' : 'FAMILY')
   const [pwdPartyUserId, setPwdPartyUserId] = useState('')
   const [pwdSecret, setPwdSecret] = useState('')
@@ -92,7 +108,8 @@ export function VaultWorkspace({ scope, familyId }: VaultWorkspaceProps) {
 
   // Form state: Document
   const [docTitle, setDocTitle] = useState('')
-  const [docCategory, setDocCategory] = useState('Identity & Passports')
+  const [docCategoryId, setDocCategoryId] = useState<string | null>(null)
+  const [docShare, setDocShare] = useState(false)
   const [docParty, setDocParty] = useState<'FAMILY' | 'MEMBER' | 'SELF'>(isPersonal ? 'SELF' : 'FAMILY')
   const [docPartyUserId, setDocPartyUserId] = useState('')
   const [docAttachmentId, setDocAttachmentId] = useState<string | null>(null)
@@ -105,9 +122,38 @@ export function VaultWorkspace({ scope, familyId }: VaultWorkspaceProps) {
       if (vaultToken) {
         headers['X-Vault-Token'] = vaultToken
       }
-      const url = `/api/familyos/vault/items?scope=${scope}${scope === 'FAMILY' && familyId ? `&family_id=${familyId}` : ''}`
+      const familyQuery = scope === 'FAMILY' && familyId ? `&family_id=${familyId}` : ''
+      const kind = activeTab === 'passwords' ? 'PASSWORD' : 'FILE'
+      const url = `/api/familyos/vault/items?scope=${scope}&kind=${kind}&page=${paging.page}&page_size=${paging.pageSize}${familyQuery}`
       const res = await apiFetch<VaultListResponse>(url, { headers })
       setItems(res.items || [])
+      setListMeta({ total: res.total || 0, totalPages: res.totalPages || 0 })
+      if (typeof res.passwordCount === 'number' && typeof res.documentCount === 'number') {
+        setPasswordCount(res.passwordCount)
+        setDocumentCount(res.documentCount)
+      } else if (activeTab === 'passwords') {
+        setPasswordCount(res.total || 0)
+        try {
+          const other = await apiFetch<VaultListResponse>(
+            `/api/familyos/vault/items?scope=${scope}&kind=FILE&page=1&page_size=1${familyQuery}`,
+            { headers },
+          )
+          setDocumentCount(other.total || 0)
+        } catch {
+          /* The open list still loaded. */
+        }
+      } else {
+        setDocumentCount(res.total || 0)
+        try {
+          const other = await apiFetch<VaultListResponse>(
+            `/api/familyos/vault/items?scope=${scope}&kind=PASSWORD&page=1&page_size=1${familyQuery}`,
+            { headers },
+          )
+          setPasswordCount(other.total || 0)
+        } catch {
+          /* The open list still loaded. */
+        }
+      }
       setPinConfigured(res.pinConfigured)
       setIsUnlocked(res.isUnlocked)
     } catch (err: any) {
@@ -115,7 +161,7 @@ export function VaultWorkspace({ scope, familyId }: VaultWorkspaceProps) {
     } finally {
       setLoading(false)
     }
-  }, [scope, familyId, vaultToken])
+  }, [scope, familyId, vaultToken, paging.page, paging.pageSize, activeTab])
 
   useEffect(() => {
     fetchItems()
@@ -198,7 +244,8 @@ export function VaultWorkspace({ scope, familyId }: VaultWorkspaceProps) {
           familyId: scope === 'FAMILY' ? familyId : null,
           kind: 'PASSWORD',
           title: pwdTitle.trim(),
-          category: pwdCategory.trim(),
+          categoryId: pwdCategoryId,
+          letEveryoneEdit: isPersonal ? false : pwdShare,
           forPartyType: isPersonal ? 'SELF' : pwdParty,
           forUserId: !isPersonal && pwdParty === 'MEMBER' ? pwdPartyUserId : null,
           secret: payloadSecret,
@@ -231,7 +278,8 @@ export function VaultWorkspace({ scope, familyId }: VaultWorkspaceProps) {
           familyId: scope === 'FAMILY' ? familyId : null,
           kind: 'FILE',
           title: docTitle.trim(),
-          category: docCategory.trim(),
+          categoryId: docCategoryId,
+          letEveryoneEdit: isPersonal ? false : docShare,
           forPartyType: isPersonal ? 'SELF' : docParty,
           forUserId: !isPersonal && docParty === 'MEMBER' ? docPartyUserId : null,
           documentId: docAttachmentId,
@@ -301,7 +349,13 @@ export function VaultWorkspace({ scope, familyId }: VaultWorkspaceProps) {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <CategoryManageButton
+            scope={scope}
+            familyId={isPersonal ? undefined : familyId}
+            types={['VAULT_PASSWORD', 'VAULT_DOCUMENT']}
+            className="border-white/10 bg-white/5 text-slate-200 hover:bg-white/10"
+          />
           {isUnlocked && (
             <button
               type="button"
@@ -385,7 +439,7 @@ export function VaultWorkspace({ scope, familyId }: VaultWorkspaceProps) {
                 <KeyRoundIcon className="h-3.5 w-3.5 text-emerald-400" />
                 <span>1. Password Vault</span>
                 <span className="rounded-full bg-white/10 px-1.5 py-0.2 text-[10px] text-slate-300">
-                  {passwordItems.length}
+                  {passwordCount}
                 </span>
               </button>
 
@@ -401,7 +455,7 @@ export function VaultWorkspace({ scope, familyId }: VaultWorkspaceProps) {
                 <FileTextIcon className="h-3.5 w-3.5 text-cyan-400" />
                 <span>2. Document Vault</span>
                 <span className="rounded-full bg-white/10 px-1.5 py-0.2 text-[10px] text-slate-300">
-                  {documentItems.length}
+                  {documentCount}
                 </span>
               </button>
             </div>
@@ -526,6 +580,7 @@ export function VaultWorkspace({ scope, familyId }: VaultWorkspaceProps) {
                   })}
                 </div>
               )}
+              <PageBar state={paging} data={listMeta.total ? listMeta : undefined} />
             </div>
           )}
 
@@ -618,6 +673,7 @@ export function VaultWorkspace({ scope, familyId }: VaultWorkspaceProps) {
                   })}
                 </div>
               )}
+              <PageBar state={paging} data={listMeta.total ? listMeta : undefined} />
             </div>
           )}
         </div>
@@ -626,7 +682,7 @@ export function VaultWorkspace({ scope, familyId }: VaultWorkspaceProps) {
       {/* Modal: Setup PIN */}
       {showSetupPin && (
         <FosModalOverlay>
-          <div className="w-full max-w-sm rounded-2xl border border-[#233554]/90 bg-[#112240]/95 p-6 text-[#ccd6f6] shadow-[0_25px_60px_rgba(2,12,27,0.85)] ring-1 ring-white/5 max-h-[85vh] overflow-y-auto my-auto">
+          <div className="my-auto w-full min-w-0 max-w-sm max-h-[calc(100dvh-1.5rem)] overflow-y-auto rounded-2xl border border-[#233554]/90 bg-[#112240]/95 p-4 text-[#ccd6f6] shadow-[0_25px_60px_rgba(2,12,27,0.85)] ring-1 ring-white/5 sm:p-6">
             <h3 className="text-base font-semibold">
               {pinConfigured ? 'Change Vault PIN' : 'Setup Vault PIN'}
             </h3>
@@ -655,7 +711,7 @@ export function VaultWorkspace({ scope, familyId }: VaultWorkspaceProps) {
                   className="mt-1.5 bg-[#0a192f] border-[#233554] text-[#ccd6f6] focus:border-[#64ffda]"
                 />
               </div>
-              <div className="flex justify-end gap-2 pt-2">
+              <div className="form-actions pt-2">
                 <Button
                   type="button"
                   variant="ghost"
@@ -677,7 +733,7 @@ export function VaultWorkspace({ scope, familyId }: VaultWorkspaceProps) {
       {/* Modal: Add Password */}
       {showAddPassword && (
         <FosModalOverlay>
-          <div className="w-full max-w-xl rounded-2xl border border-[#233554]/90 bg-[#112240]/95 p-6 sm:p-7 text-[#ccd6f6] shadow-[0_25px_60px_rgba(2,12,27,0.85)] ring-1 ring-white/5 max-h-[88vh] overflow-y-auto my-auto">
+          <div className="my-auto w-full min-w-0 max-w-xl max-h-[calc(100dvh-1.5rem)] overflow-y-auto rounded-2xl border border-[#233554]/90 bg-[#112240]/95 p-4 text-[#ccd6f6] shadow-[0_25px_60px_rgba(2,12,27,0.85)] ring-1 ring-white/5 sm:max-h-[88vh] sm:p-7">
             <h3 className="text-base font-semibold">Add Password Entry</h3>
             <form onSubmit={handleCreatePassword} className="mt-4 space-y-3.5">
               <div>
@@ -696,8 +752,8 @@ export function VaultWorkspace({ scope, familyId }: VaultWorkspaceProps) {
                 scope={scope}
                 categoryType="VAULT_PASSWORD"
                 familyId={familyId}
-                value={pwdCategory}
-                onSelect={(cat) => setPwdCategory(cat.name)}
+                value={pwdCategoryId}
+                onSelect={(cat) => setPwdCategoryId(cat?.id ?? null)}
                 label="Category"
               />
 
@@ -705,7 +761,7 @@ export function VaultWorkspace({ scope, familyId }: VaultWorkspaceProps) {
               {!isPersonal && (
                 <div>
                   <Label className="text-xs text-[#8892b0]">Assigned To</Label>
-                  <div className="mt-1 flex gap-2">
+                  <div className="mt-1 flex flex-col gap-2 sm:flex-row">
                     <button
                       type="button"
                       onClick={() => { setPwdParty('FAMILY'); setPwdPartyUserId(''); }}
@@ -766,7 +822,16 @@ export function VaultWorkspace({ scope, familyId }: VaultWorkspaceProps) {
                 />
               </div>
 
-              <div className="flex justify-end gap-2 pt-2 border-t border-white/10">
+              {!isPersonal && (
+                <LetEveryoneEditSection
+                  allowed
+                  checked={pwdShare}
+                  onCheckedChange={setPwdShare}
+                  allowedDescription="On: any family member can change this entry. Off: only you and the family head."
+                />
+              )}
+
+              <div className="form-actions border-t border-white/10 pt-2">
                 <Button
                   type="button"
                   variant="ghost"
@@ -788,7 +853,7 @@ export function VaultWorkspace({ scope, familyId }: VaultWorkspaceProps) {
       {/* Modal: Add Document */}
       {showAddDoc && (
         <FosModalOverlay>
-          <div className="w-full max-w-xl rounded-2xl border border-[#233554]/90 bg-[#112240]/95 p-6 sm:p-7 text-[#ccd6f6] shadow-[0_25px_60px_rgba(2,12,27,0.85)] ring-1 ring-white/5 max-h-[88vh] overflow-y-auto my-auto">
+          <div className="my-auto w-full min-w-0 max-w-xl max-h-[calc(100dvh-1.5rem)] overflow-y-auto rounded-2xl border border-[#233554]/90 bg-[#112240]/95 p-4 text-[#ccd6f6] shadow-[0_25px_60px_rgba(2,12,27,0.85)] ring-1 ring-white/5 sm:max-h-[88vh] sm:p-7">
             <h3 className="text-base font-semibold">Add Document Entry</h3>
             <form onSubmit={handleCreateDoc} className="mt-4 space-y-3.5">
               <div>
@@ -807,8 +872,8 @@ export function VaultWorkspace({ scope, familyId }: VaultWorkspaceProps) {
                 scope={scope}
                 categoryType="VAULT_DOCUMENT"
                 familyId={familyId}
-                value={docCategory}
-                onSelect={(cat) => setDocCategory(cat.name)}
+                value={docCategoryId}
+                onSelect={(cat) => setDocCategoryId(cat?.id ?? null)}
                 label="Category"
               />
 
@@ -816,7 +881,7 @@ export function VaultWorkspace({ scope, familyId }: VaultWorkspaceProps) {
               {!isPersonal && (
                 <div>
                   <Label className="text-xs text-[#8892b0]">Assigned To</Label>
-                  <div className="mt-1 flex gap-2">
+                  <div className="mt-1 flex flex-col gap-2 sm:flex-row">
                     <button
                       type="button"
                       onClick={() => { setDocParty('FAMILY'); setDocPartyUserId(''); }}
@@ -869,7 +934,16 @@ export function VaultWorkspace({ scope, familyId }: VaultWorkspaceProps) {
                 label="Document File (PDF / Images)"
               />
 
-              <div className="flex justify-end gap-2 pt-2 border-t border-white/10">
+              {!isPersonal && (
+                <LetEveryoneEditSection
+                  allowed
+                  checked={docShare}
+                  onCheckedChange={setDocShare}
+                  allowedDescription="On: any family member can change this entry. Off: only you and the family head."
+                />
+              )}
+
+              <div className="form-actions border-t border-white/10 pt-2">
                 <Button
                   type="button"
                   variant="ghost"

@@ -21,12 +21,14 @@ export function FosModalOverlay({
   return createPortal(
     <div
       className={cn(
-        'fixed inset-0 z-[100] flex items-center justify-center bg-[#0a192f]/85 p-4 sm:p-6 md:p-8 backdrop-blur-md animate-in fade-in duration-200 overflow-y-auto',
+        'fixed inset-0 z-[100] overflow-y-auto overscroll-contain bg-[#0a192f]/85 backdrop-blur-md animate-in fade-in duration-200',
         className,
       )}
       {...props}
     >
-      {children}
+      <div className="flex min-h-full w-full items-start justify-center px-3 py-[max(0.75rem,env(safe-area-inset-top))] pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:items-center sm:px-6 sm:py-8">
+        {children}
+      </div>
     </div>,
     document.body,
   )

@@ -11,7 +11,7 @@ export function useInsurance(
 ) {
   const filters = scopeListParams(scope)
   return useQuery({
-    queryKey: [...queryKeys.insurance(familyId), scope, page, filters] as const,
+    queryKey: [...queryKeys.insurance(familyId), scope, page, pageSize, filters] as const,
     queryFn: () =>
       scope.kind === 'personal'
         ? personalInsuranceApi.list(page, pageSize)

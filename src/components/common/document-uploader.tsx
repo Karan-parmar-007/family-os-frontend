@@ -83,7 +83,7 @@ export function DocumentUploader({
 
   return (
     <div className={`space-y-1 ${className}`}>
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col items-start gap-0.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
         <Label className="text-xs text-[#8892b0]">
           {label}
         </Label>

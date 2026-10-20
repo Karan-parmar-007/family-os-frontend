@@ -8,9 +8,12 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "#/components/ui/input"
 import { Label } from "#/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "#/components/ui/select"
-import { Switch } from "#/components/ui/switch"
-import { FrequencySelector } from "#/components/common/frequency-selector"
+import { CategoryManageButton } from "#/components/common/category-manager"
+import { CategoryPicker } from "#/components/common/category-picker"
 import { DocumentUploader } from "#/components/common/document-uploader"
+import { LetEveryoneEditSection } from "#/components/forms/let-everyone-edit-section"
+import { PageBar } from "#/components/ui/list-pagination"
+import { usePagination } from "#/lib/api/pagination"
 import { useCreateInsurance, useDeleteInsurance, useInsurance, useUpdateInsurance } from "#/hooks/api/use-insurance"
 import { useScope } from "#/hooks/use-scope"
 import { ApiError, familiesApi, isNetworkError, documentsApi } from "#/lib/api"
@@ -55,7 +58,8 @@ export const Route = createFileRoute("/_authenticated/insurance/$familyId")({
 function InsurancePage() {
   const { familyId } = Route.useParams()
   const { scope } = useScope()
-  const { data, isLoading } = useInsurance(familyId, scope)
+  const paging = usePagination([familyId, scope.kind])
+  const { data, isLoading } = useInsurance(familyId, scope, paging.page, paging.pageSize)
   const createInsurance = useCreateInsurance(familyId, scope)
   const updateInsurance = useUpdateInsurance(familyId, scope)
   const deleteInsurance = useDeleteInsurance(familyId, scope)
@@ -67,11 +71,15 @@ function InsurancePage() {
   const [provider, setProvider] = useState("")
   const [policyNumber, setPolicyNumber] = useState("")
   const [coverage, setCoverage] = useState("")
-  const [recurring, setRecurring] = useState(false)
+  const [scheduleMode, setScheduleMode] = useState<"NONE" | "INTERVAL" | "CUSTOM">("NONE")
+  const [categoryId, setCategoryId] = useState<string | null>(null)
+  const [letEveryoneEdit, setLetEveryoneEdit] = useState(false)
   const [totalToPay, setTotalToPay] = useState("")
-  const [emiCount, setEmiCount] = useState("12")
-  const [frequency, setFrequency] = useState("MONTHLY")
+  const [premiumEvery, setPremiumEvery] = useState("MONTHLY")
   const [nextDate, setNextDate] = useState("")
+  const [installments, setInstallments] = useState<{ date: string; amount: string }[]>([
+    { date: "", amount: "" },
+  ])
   const [documentId, setDocumentId] = useState<string | null>(null)
   const [documentName, setDocumentName] = useState<string | null>(null)
 
@@ -86,10 +94,11 @@ function InsurancePage() {
   const [editPremium, setEditPremium] = useState("")
   const [editNextDate, setEditNextDate] = useState("")
 
+  const paymentsPerYear: Record<string, number> = { MONTHLY: 12, QUARTERLY: 4, HALF_YEARLY: 2, YEARLY: 1 }
   const emiPreview = (() => {
     const total = Number(totalToPay || 0)
-    const n = Number(emiCount || 0)
-    if (!recurring || total <= 0 || n < 1) return 0
+    const n = paymentsPerYear[premiumEvery] || 1
+    if (scheduleMode !== "INTERVAL" || total <= 0) return 0
     return Math.round((total / n) * 100) / 100
   })()
 
@@ -111,26 +120,36 @@ function InsurancePage() {
       toast.error("Enter policy name.")
       return
     }
-    const n = Number(emiCount || 0)
     const total = Number(totalToPay || 0)
-    if (recurring && (total <= 0 || n < 1 || !nextDate)) {
-      toast.error("Enter total to pay, EMI count, and first payment date.")
+    const dated = installments
+      .filter((row) => row.date && Number(row.amount) > 0)
+      .map((row) => ({ dueDate: new Date(`${row.date}T12:00:00`).toISOString(), amount: Number(row.amount) }))
+    if (scheduleMode === "INTERVAL" && (total <= 0 || !nextDate)) {
+      toast.error("Enter the yearly premium and the next deduction date.")
+      return
+    }
+    if (scheduleMode === "CUSTOM" && dated.length === 0) {
+      toast.error("Add at least one installment date and amount.")
       return
     }
     createInsurance.mutate(
       {
         insurance_name: name.trim(),
         type,
+        category_id: categoryId,
+        let_everyone_edit: scope.kind === "family" ? letEveryoneEdit : false,
         provider: provider.trim() || undefined,
         policy_number: policyNumber.trim() || undefined,
         coverage_amount: c,
-        premium_amount: recurring ? total : 0,
-        premium_every: recurring ? frequency.toUpperCase() : undefined,
-        next_premium_date: recurring && nextDate ? new Date(nextDate).toISOString() : undefined,
-        emi_count: recurring ? n : undefined,
+        premium_amount: scheduleMode === "INTERVAL" ? emiPreview : 0,
+        schedule_mode: scheduleMode,
+        annual_premium: scheduleMode === "INTERVAL" ? total : undefined,
+        premium_every: scheduleMode === "INTERVAL" ? premiumEvery : undefined,
+        next_premium_date: scheduleMode === "INTERVAL" && nextDate ? new Date(`${nextDate}T12:00:00`).toISOString() : undefined,
+        installments: scheduleMode === "CUSTOM" ? dated : undefined,
         document_id: documentId || undefined,
         is_personal: scope.kind === "personal",
-      } as any,
+      },
       {
         onSuccess: () => {
           toast.success("Insurance policy created")
@@ -140,11 +159,13 @@ function InsurancePage() {
           setProvider("")
           setPolicyNumber("")
           setCoverage("")
-          setRecurring(false)
+          setScheduleMode("NONE")
+          setCategoryId(null)
+          setLetEveryoneEdit(false)
           setTotalToPay("")
-          setEmiCount("12")
-          setFrequency("MONTHLY")
+          setPremiumEvery("MONTHLY")
           setNextDate("")
+          setInstallments([{ date: "", amount: "" }])
           setDocumentId(null)
           setDocumentName(null)
         },
@@ -212,27 +233,36 @@ function InsurancePage() {
                 Active health, life, vehicle, and property cover policies with premium tracking.
               </p>
             </div>
-            <Button
-              size="sm"
-              onClick={() => {
-                setName("")
-                setType("HEALTH")
-                setProvider("")
-                setPolicyNumber("")
-                setCoverage("")
-                setRecurring(false)
-                setTotalToPay("")
-                setEmiCount("12")
-                setFrequency("MONTHLY")
-                setNextDate("")
-                setDocumentId(null)
-                setDocumentName(null)
-                setOpen(true)
-              }}
-              className="bg-[#64ffda] text-[#0a192f] hover:bg-[#64ffda]/90 font-semibold shadow"
-            >
-              <PlusIcon className="mr-1.5 h-4 w-4" /> Add Policy
-            </Button>
+            <div className="flex flex-wrap items-center gap-2">
+              <CategoryManageButton
+                scope={scope.kind === "personal" ? "PERSONAL" : "FAMILY"}
+                familyId={scope.kind === "personal" ? undefined : familyId}
+                types={["INSURANCE"]}
+              />
+              <Button
+                size="sm"
+                onClick={() => {
+                  setName("")
+                  setType("HEALTH")
+                  setProvider("")
+                  setPolicyNumber("")
+                  setCoverage("")
+                  setScheduleMode("NONE")
+                  setCategoryId(null)
+                  setLetEveryoneEdit(false)
+                  setTotalToPay("")
+                  setPremiumEvery("MONTHLY")
+                  setNextDate("")
+                  setInstallments([{ date: "", amount: "" }])
+                  setDocumentId(null)
+                  setDocumentName(null)
+                  setOpen(true)
+                }}
+                className="bg-[#64ffda] text-[#0a192f] hover:bg-[#64ffda]/90 font-semibold shadow"
+              >
+                <PlusIcon className="mr-1.5 h-4 w-4" /> Add Policy
+              </Button>
+            </div>
           </div>
 
           {isLoading && <p className="mt-4 text-sm text-[#8892b0]">Loading policies…</p>}
@@ -347,12 +377,13 @@ function InsurancePage() {
               </li>
             ))}
           </ul>
+          <PageBar state={paging} data={data} />
         </BentoCard>
       </BentoGrid>
 
       {/* CREATE INSURANCE MODAL - SINGLE COLUMN */}
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-h-[90vh] w-[calc(100vw-2rem)] overflow-y-auto sm:max-w-xl">
+        <DialogContent className="sm:max-w-xl">
           <DialogHeader>
             <DialogTitle>Create Insurance</DialogTitle>
             <DialogDescription>Add a family or personal insurance policy with premium schedule and policy bond attachment.</DialogDescription>
@@ -415,18 +446,33 @@ function InsurancePage() {
               />
             </div>
 
-            <div className="flex items-center justify-between rounded-xl border border-[#233554] bg-[#0a192f]/60 p-3">
-              <div>
-                <p className="text-sm font-semibold text-[#ccd6f6]">Recurring Policy Premium</p>
-                <p className="text-xs text-[#8892b0]">Maps recurring schedule for premium payments.</p>
-              </div>
-              <Switch checked={recurring} onCheckedChange={setRecurring} />
+            <CategoryPicker
+              scope={scope.kind === "personal" ? "PERSONAL" : "FAMILY"}
+              categoryType="INSURANCE"
+              familyId={familyId}
+              value={categoryId}
+              onSelect={(cat) => setCategoryId(cat?.id ?? null)}
+              label="Your category"
+            />
+
+            <div className="space-y-1">
+              <Label className="text-xs text-[#8892b0]">How premiums are paid</Label>
+              <Select value={scheduleMode} onValueChange={(v) => setScheduleMode(v as "NONE" | "INTERVAL" | "CUSTOM")}>
+                <SelectTrigger className="bg-[#0a192f] border-[#233554] text-[#ccd6f6]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-[#112240] border-[#233554] text-[#ccd6f6]">
+                  <SelectItem value="NONE">No automatic payments</SelectItem>
+                  <SelectItem value="INTERVAL">Yearly premium, split by interval</SelectItem>
+                  <SelectItem value="CUSTOM">I will enter each installment date</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
-            {recurring && (
-              <div className="rounded-xl border border-[#233554] bg-[#0a192f]/40 p-3.5 space-y-3.5">
+            {scheduleMode === "INTERVAL" && (
+              <div className="space-y-3.5 rounded-xl border border-[#233554] bg-[#0a192f]/40 p-3.5">
                 <div className="space-y-1">
-                  <Label className="text-xs text-[#8892b0]">Total Annual Premium</Label>
+                  <Label className="text-xs text-[#8892b0]">Yearly premium</Label>
                   <Input
                     type="number"
                     min="0"
@@ -437,34 +483,28 @@ function InsurancePage() {
                     placeholder="0.00"
                   />
                 </div>
-
                 <div className="space-y-1">
-                  <Label className="text-xs text-[#8892b0]">Number of Payments</Label>
-                  <Input
-                    type="number"
-                    min="1"
-                    value={emiCount}
-                    onChange={(e) => setEmiCount(e.target.value)}
-                    className="bg-[#112240] border-[#233554] text-[#ccd6f6]"
-                  />
+                  <Label className="text-xs text-[#8892b0]">Interval</Label>
+                  <Select value={premiumEvery} onValueChange={setPremiumEvery}>
+                    <SelectTrigger className="bg-[#112240] border-[#233554] text-[#ccd6f6]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-[#112240] border-[#233554] text-[#ccd6f6]">
+                      <SelectItem value="MONTHLY">Monthly</SelectItem>
+                      <SelectItem value="QUARTERLY">Quarterly</SelectItem>
+                      <SelectItem value="HALF_YEARLY">Half-yearly</SelectItem>
+                      <SelectItem value="YEARLY">Yearly</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-
                 {emiPreview > 0 && (
                   <p className="text-xs text-[#8892b0]">
-                    Payment per cycle: <strong className="text-[#64ffda] font-mono">{formatCurrency(emiPreview)}</strong>
+                    Each installment: <strong className="font-mono text-[#64ffda]">{formatCurrency(emiPreview)}</strong>
+                    . The last one in the year takes any rounding difference.
                   </p>
                 )}
-
                 <div className="space-y-1">
-                  <FrequencySelector
-                    value={frequency}
-                    onChange={setFrequency}
-                    label="Premium Payment Cadence"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <Label className="text-xs text-[#8892b0]">First Payment Date</Label>
+                  <Label className="text-xs text-[#8892b0]">Next deduction date</Label>
                   <Input
                     type="date"
                     value={nextDate}
@@ -472,6 +512,44 @@ function InsurancePage() {
                     className="bg-[#112240] border-[#233554] text-[#ccd6f6]"
                   />
                 </div>
+              </div>
+            )}
+
+            {scheduleMode === "CUSTOM" && (
+              <div className="space-y-2 rounded-xl border border-[#233554] bg-[#0a192f]/40 p-3.5">
+                <Label className="text-xs text-[#8892b0]">Installment dates</Label>
+                {installments.map((row, index) => (
+                  <div key={index} className="flex flex-col gap-2 sm:flex-row">
+                    <Input
+                      type="date"
+                      value={row.date}
+                      onChange={(e) =>
+                        setInstallments((rows) => rows.map((r, i) => (i === index ? { ...r, date: e.target.value } : r)))
+                      }
+                      className="bg-[#112240] border-[#233554] text-[#ccd6f6]"
+                    />
+                    <Input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      placeholder="Amount"
+                      value={row.amount}
+                      onChange={(e) =>
+                        setInstallments((rows) => rows.map((r, i) => (i === index ? { ...r, amount: e.target.value } : r)))
+                      }
+                      className="bg-[#112240] border-[#233554] text-[#ccd6f6] font-mono"
+                    />
+                  </div>
+                ))}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="border-[#233554]"
+                  onClick={() => setInstallments((rows) => [...rows, { date: "", amount: "" }])}
+                >
+                  Add date
+                </Button>
               </div>
             )}
 
@@ -490,9 +568,12 @@ function InsurancePage() {
             />
 
             {scope.kind === "family" && (
-              <p className="text-xs text-[#8892b0]">
-                This creates a family policy. Manage personal insurance under Personal → Insurance.
-              </p>
+              <LetEveryoneEditSection
+                allowed
+                checked={letEveryoneEdit}
+                onCheckedChange={setLetEveryoneEdit}
+                allowedDescription="On: any family member can change this policy. Off: only you and the family head."
+              />
             )}
           </div>
           <DialogFooter className="border-t border-[#233554]/60 pt-3">
@@ -512,7 +593,7 @@ function InsurancePage() {
 
       {/* EDIT INSURANCE MODAL - SINGLE COLUMN */}
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
-        <DialogContent className="max-h-[90vh] w-[calc(100vw-2rem)] overflow-y-auto sm:max-w-xl">
+        <DialogContent className="sm:max-w-xl">
           <DialogHeader>
             <DialogTitle>Edit Policy</DialogTitle>
             <DialogDescription>Update the details and premium schedule of this policy.</DialogDescription>

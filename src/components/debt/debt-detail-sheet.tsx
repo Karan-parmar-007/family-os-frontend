@@ -148,7 +148,7 @@ export function DebtDetailSheet({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] w-[calc(100vw-2rem)] overflow-y-auto sm:max-w-2xl">
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle className="flex flex-wrap items-center gap-2">
             {debt?.debtName ?? 'Debt details'}

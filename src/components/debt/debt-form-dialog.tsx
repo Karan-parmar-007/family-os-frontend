@@ -843,7 +843,7 @@ export function DebtFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[92vh] w-[calc(100vw-2rem)] overflow-y-auto sm:max-w-4xl">
+      <DialogContent className="sm:max-w-4xl">
         <DialogHeader>
           <DialogTitle>{initial ? 'Edit Debt' : 'Add Debt'}</DialogTitle>
           <DialogDescription>
@@ -982,7 +982,7 @@ export function DebtFormDialog({
                 </div>
                 {hasInterest && (
                   <div className="space-y-3 border-t border-border/50 pt-3">
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                       <div className="space-y-1">
                         <Label>Interest type</Label>
                         <Select
@@ -1181,7 +1181,7 @@ export function DebtFormDialog({
                     </div>
 
                     {frequencyMode === 'custom' && (
-                      <div className="grid grid-cols-3 gap-2">
+                      <div className="grid grid-cols-1 gap-2 min-[420px]:grid-cols-3">
                         <div className="space-y-1">
                           <Label className="text-xs text-muted-foreground">
                             Years

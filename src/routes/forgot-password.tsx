@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router"
 import { useEffect } from "react"
+import { resolveAppUrl } from '#/lib/sso/sso-client'
 
 export const Route = createFileRoute("/forgot-password")({
   component: ForgotPasswordRedirect,
@@ -7,7 +8,7 @@ export const Route = createFileRoute("/forgot-password")({
 
 function ForgotPasswordRedirect() {
   useEffect(() => {
-    const sso = import.meta.env.VITE_SSO_URL || "http://localhost:5173"
+    const sso = resolveAppUrl(import.meta.env.VITE_SSO_URL || "http://localhost:5173")
     window.location.replace(`${sso}/forgot-password`)
   }, [])
 

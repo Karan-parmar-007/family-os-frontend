@@ -17,6 +17,8 @@ import {
   useNotificationAction,
   useNotifications,
 } from '#/hooks/api/use-notifications'
+import { PageBar } from '#/components/ui/list-pagination'
+import { usePagination } from '#/lib/api/pagination'
 import { ApiError, type NotificationItem } from '#/lib/api'
 import { NotificationCard } from './cards'
 
@@ -30,7 +32,11 @@ function formatWhen(iso: string) {
 }
 
 export function NotificationCenter({ compact = false }: { compact?: boolean }) {
-  const { data, isLoading, isError } = useNotifications(1, compact ? 5 : 20)
+  const paging = usePagination()
+  const { data, isLoading, isError } = useNotifications(
+    compact ? 1 : paging.page,
+    compact ? 5 : paging.pageSize,
+  )
   const act = useNotificationAction()
   const markRead = useMarkNotificationRead()
   const markAll = useMarkAllNotificationsRead()
@@ -154,6 +160,7 @@ export function NotificationCenter({ compact = false }: { compact?: boolean }) {
           </li>
         ))}
       </ul>
+      {!compact && <PageBar state={paging} data={data} />}
 
       {delayTarget && (
         <Dialog open onOpenChange={(open) => !open && setDelayTarget(null)}>

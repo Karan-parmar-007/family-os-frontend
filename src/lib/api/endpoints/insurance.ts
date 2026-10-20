@@ -21,9 +21,15 @@ export const insuranceApi = {
       type: string
       premium_amount: number
       coverage_amount: number
+      provider?: string
+      policy_number?: string
       premium_every?: string
       next_premium_date?: string
-      emi_count?: number
+      schedule_mode?: 'NONE' | 'INTERVAL' | 'CUSTOM'
+      annual_premium?: number
+      category_id?: string | null
+      let_everyone_edit?: boolean
+      installments?: { dueDate: string; amount: number }[]
       is_personal?: boolean
       access_level?: string
       document_id?: string

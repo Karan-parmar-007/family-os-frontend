@@ -11,7 +11,7 @@ export function useAssets(
 ) {
   const filters = scopeListParams(scope)
   return useQuery({
-    queryKey: [...queryKeys.assets(familyId), scope, page, filters] as const,
+    queryKey: [...queryKeys.assets(familyId), scope, page, pageSize, filters] as const,
     queryFn: () =>
       scope.kind === 'personal'
         ? personalAssetsApi.list(page, pageSize)

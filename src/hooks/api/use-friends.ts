@@ -2,10 +2,10 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { friendsApi } from '#/lib/api/endpoints/friends'
 import { queryKeys } from '#/lib/query/keys'
 
-export function useFriends() {
+export function useFriends(page = 1, pageSize = 10) {
   return useQuery({
-    queryKey: queryKeys.friends,
-    queryFn: () => friendsApi.list(),
+    queryKey: [...queryKeys.friends, page, pageSize],
+    queryFn: () => friendsApi.list(page, pageSize),
   })
 }
 

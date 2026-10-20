@@ -1,4 +1,5 @@
 import { apiFetch } from '../client'
+import type { Page } from '../pagination'
 import type { CurrencyItem } from './currencies'
 
 export interface AdminUserFamilyItem {
@@ -49,8 +50,11 @@ export interface CurrencyUpdatePayload {
 
 export const adminApi = {
   // Currencies
-  listCurrencies(): Promise<{ items: CurrencyItem[] }> {
-    return apiFetch<{ items: CurrencyItem[] }>('/api/familyos/admin/currencies', { method: 'GET' })
+  listCurrencies(page = 1, pageSize = 10, q?: string): Promise<Page<CurrencyItem>> {
+    return apiFetch<Page<CurrencyItem>>('/api/familyos/admin/currencies', {
+      method: 'GET',
+      params: { page, page_size: pageSize, q: q || undefined },
+    })
   },
   createCurrency(body: CurrencyCreatePayload): Promise<CurrencyItem> {
     return apiFetch<CurrencyItem>('/api/familyos/admin/currencies', {
@@ -71,8 +75,11 @@ export const adminApi = {
   },
 
   // Users
-  listUsers(): Promise<{ items: AdminUserSummary[] }> {
-    return apiFetch<{ items: AdminUserSummary[] }>('/api/familyos/admin/users', { method: 'GET' })
+  listUsers(page = 1, pageSize = 10, q?: string): Promise<Page<AdminUserSummary>> {
+    return apiFetch<Page<AdminUserSummary>>('/api/familyos/admin/users', {
+      method: 'GET',
+      params: { page, page_size: pageSize, q: q || undefined },
+    })
   },
   updateUserCap(userId: string, maxFamilyMemberships: number): Promise<{ message: string; maxFamilyMemberships: number }> {
     return apiFetch<{ message: string; maxFamilyMemberships: number }>(`/api/familyos/admin/users/${userId}`, {
@@ -87,8 +94,11 @@ export const adminApi = {
   },
 
   // Families
-  listFamilies(): Promise<{ items: AdminFamilySummary[] }> {
-    return apiFetch<{ items: AdminFamilySummary[] }>('/api/familyos/admin/families', { method: 'GET' })
+  listFamilies(page = 1, pageSize = 10, q?: string): Promise<Page<AdminFamilySummary>> {
+    return apiFetch<Page<AdminFamilySummary>>('/api/familyos/admin/families', {
+      method: 'GET',
+      params: { page, page_size: pageSize, q: q || undefined },
+    })
   },
   deleteFamily(familyId: string): Promise<{ message: string }> {
     return apiFetch<{ message: string }>(`/api/familyos/admin/families/${familyId}`, {

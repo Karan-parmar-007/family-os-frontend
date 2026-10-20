@@ -7,6 +7,8 @@ export function useUpcoming(
   familyId: string,
   scope: AppScope,
   horizonDays = 90,
+  page = 1,
+  pageSize = 10,
 ) {
   const scopeParam = scope.kind === 'personal' ? 'personal' : undefined
 
@@ -15,11 +17,15 @@ export function useUpcoming(
       ...queryKeys.upcoming(familyId),
       scopeToParam(scope),
       horizonDays,
+      page,
+      pageSize,
     ] as const,
     queryFn: () =>
       upcomingApi.list(familyId, {
         horizonDays,
         scope: scopeParam,
+        page,
+        pageSize,
       }),
     enabled: !!familyId,
     staleTime: 60_000,

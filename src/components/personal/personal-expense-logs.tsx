@@ -528,7 +528,7 @@ function PersonalExpenseLogModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-h-[90vh] w-[calc(100vw-2rem)] overflow-y-auto sm:max-w-2xl">
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>{isEdit ? 'Expense log detail' : 'Add personal expense'}</DialogTitle>
           <DialogDescription>

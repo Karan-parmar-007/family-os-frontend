@@ -22,7 +22,7 @@ export function AdminNav() {
         <h1 className="text-2xl font-bold text-white tracking-tight">Platform Admin</h1>
       </div>
 
-      <nav className="flex flex-wrap items-center gap-2 p-1 bg-[#112240] border border-[#172a45] rounded-xl text-sm font-medium">
+      <nav className="grid w-full grid-cols-2 gap-1 rounded-xl border border-[#172a45] bg-[#112240] p-1 text-sm font-medium sm:flex sm:w-auto sm:flex-wrap sm:items-center sm:gap-2">
         {links.map(({ to, label, icon: Icon }) => {
           const isActive =
             to === '/admin' ? currentPath === '/admin' : currentPath === to || currentPath.startsWith(`${to}/`)
@@ -30,14 +30,14 @@ export function AdminNav() {
             <Link
               key={to}
               to={to}
-              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg transition-all no-underline ${
+              className={`flex min-w-0 items-center justify-center gap-2 rounded-lg px-3 py-2 transition-all no-underline sm:justify-start sm:px-3.5 sm:py-1.5 ${
                 isActive
                   ? 'bg-[#64ffda] text-[#0a192f] font-semibold shadow-sm'
                   : 'text-[#8892b0] hover:text-white hover:bg-[#172a45]/50'
               }`}
             >
-              <Icon className="w-4 h-4" />
-              <span>{label}</span>
+              <Icon className="h-4 w-4 shrink-0" />
+              <span className="truncate">{label}</span>
             </Link>
           )
         })}

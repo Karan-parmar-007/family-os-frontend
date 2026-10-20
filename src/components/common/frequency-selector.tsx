@@ -1,153 +1,120 @@
-import { useState, useEffect } from 'react'
 import { Label } from '#/components/ui/label'
 import { Input } from '#/components/ui/input'
-import { CalendarIcon } from 'lucide-react'
 
-export type FrequencyUnit = 'DAYS' | 'WEEKS' | 'MONTHS' | 'YEARS'
+/** Frequencies the backend schedules on (see app/core/date_advance.py). */
+export type Frequency =
+  | 'DAILY'
+  | 'WEEKLY'
+  | 'BIWEEKLY'
+  | 'MONTHLY'
+  | 'QUARTERLY'
+  | 'HALF_YEARLY'
+  | 'YEARLY'
+
+export interface Schedule {
+  frequency: Frequency
+  everyN: number
+}
+
+const UNITS: { value: Frequency; one: string; many: string }[] = [
+  { value: 'DAILY', one: 'day', many: 'days' },
+  { value: 'WEEKLY', one: 'week', many: 'weeks' },
+  { value: 'MONTHLY', one: 'month', many: 'months' },
+  { value: 'QUARTERLY', one: 'quarter', many: 'quarters' },
+  { value: 'HALF_YEARLY', one: 'half-year', many: 'half-years' },
+  { value: 'YEARLY', one: 'year', many: 'years' },
+]
+
+export function toSchedule(frequency: string | null | undefined, everyN?: number | null): Schedule {
+  const f = (frequency || 'MONTHLY').toUpperCase()
+  if (f === 'BIWEEKLY') return { frequency: 'WEEKLY', everyN: 2 * (everyN || 1) }
+  const known = UNITS.find((u) => u.value === f)
+  return { frequency: known ? known.value : 'MONTHLY', everyN: Math.max(1, everyN || 1) }
+}
+
+export function frequencyLabel(frequency: string | null | undefined, everyN?: number | null): string {
+  const s = toSchedule(frequency, everyN)
+  const unit = UNITS.find((u) => u.value === s.frequency) ?? UNITS[2]
+  if (s.everyN === 1) {
+    const single: Record<Frequency, string> = {
+      DAILY: 'Daily',
+      WEEKLY: 'Weekly',
+      BIWEEKLY: 'Every 2 weeks',
+      MONTHLY: 'Monthly',
+      QUARTERLY: 'Quarterly',
+      HALF_YEARLY: 'Every 6 months',
+      YEARLY: 'Yearly',
+    }
+    return single[s.frequency]
+  }
+  return `Every ${s.everyN} ${unit.many}`
+}
+
+/** Approximate occurrences per month, for "projected monthly" totals. */
+export function perMonth(frequency: string | null | undefined, everyN?: number | null): number {
+  const s = toSchedule(frequency, everyN)
+  const base: Record<Frequency, number> = {
+    DAILY: 30.44,
+    WEEKLY: 4.35,
+    BIWEEKLY: 2.17,
+    MONTHLY: 1,
+    QUARTERLY: 1 / 3,
+    HALF_YEARLY: 1 / 6,
+    YEARLY: 1 / 12,
+  }
+  return base[s.frequency] / s.everyN
+}
 
 export interface FrequencySelectorProps {
-  value: string
-  onChange: (value: string) => void
+  value: Schedule
+  onChange: (value: Schedule) => void
   label?: string
   className?: string
 }
 
-const PRESET_OPTIONS = [
-  { label: 'Monthly', value: 'MONTHLY' },
-  { label: 'Weekly', value: 'WEEKLY' },
-  { label: 'Bi-Weekly (14d)', value: 'BIWEEKLY' },
-  { label: 'Daily', value: 'DAILY' },
-  { label: 'Yearly', value: 'YEARLY' },
-  { label: 'Custom...', value: 'CUSTOM' },
-]
-
 export function FrequencySelector({
   value,
   onChange,
-  label = 'Cadence / Frequency',
+  label = 'Repeats',
   className = '',
 }: FrequencySelectorProps) {
-  const parseValue = (val: string): { isCustom: boolean; count: number; unit: FrequencyUnit } => {
-    const v = (val || 'MONTHLY').toUpperCase()
-    const customMatch = v.match(/^(?:EVERY_|CUSTOM_)?(\d+)[_\s]*(DAY|DAYS|WEEK|WEEKS|MONTH|MONTHS|YEAR|YEARS)$/i)
-    if (customMatch) {
-      const u = customMatch[2].toUpperCase()
-      const unit: FrequencyUnit = u.startsWith('DAY')
-        ? 'DAYS'
-        : u.startsWith('WEEK')
-        ? 'WEEKS'
-        : u.startsWith('MONTH')
-        ? 'MONTHS'
-        : 'YEARS'
-      return {
-        isCustom: true,
-        count: parseInt(customMatch[1], 10) || 7,
-        unit,
-      }
-    }
-    const isStandardPreset = ['MONTHLY', 'WEEKLY', 'BIWEEKLY', 'DAILY', 'YEARLY'].includes(v)
-    return {
-      isCustom: !isStandardPreset,
-      count: 7,
-      unit: 'DAYS',
-    }
-  }
-
-  const initialParsed = parseValue(value)
-  const [isCustom, setIsCustom] = useState(initialParsed.isCustom)
-  const [customCount, setCustomCount] = useState(initialParsed.count)
-  const [customUnit, setCustomUnit] = useState<FrequencyUnit>(initialParsed.unit)
-
-  useEffect(() => {
-    const parsed = parseValue(value)
-    setIsCustom(parsed.isCustom)
-    if (parsed.isCustom) {
-      setCustomCount(parsed.count)
-      setCustomUnit(parsed.unit)
-    }
-  }, [value])
-
-  const handleSelectPreset = (selectedVal: string) => {
-    if (selectedVal === 'CUSTOM') {
-      setIsCustom(true)
-      const token = `EVERY_${customCount}_${customUnit}`
-      onChange(token)
-    } else {
-      setIsCustom(false)
-      onChange(selectedVal)
-    }
-  }
-
-  const handleCustomChange = (count: number, unit: FrequencyUnit) => {
-    const safeCount = Math.max(1, count)
-    setCustomCount(safeCount)
-    setCustomUnit(unit)
-    onChange(`EVERY_${safeCount}_${unit}`)
-  }
-
-  const getReadableCustomSummary = () => {
-    const unitWord = customCount === 1 ? customUnit.slice(0, -1).toLowerCase() : customUnit.toLowerCase()
-    return `Repeats every ${customCount} ${unitWord}`
-  }
-
+  const unit = UNITS.find((u) => u.value === value.frequency) ?? UNITS[2]
   return (
     <div className={`space-y-1 ${className}`}>
-      <div className="flex items-center justify-between">
-        <Label className="text-xs text-[#8892b0]">
-          {label}
-        </Label>
-        {isCustom && (
-          <span className="inline-flex items-center gap-1 rounded-full bg-[#64ffda]/10 px-2 py-0.5 text-[11px] font-medium text-[#64ffda]">
-            <CalendarIcon className="size-3" />
-            {getReadableCustomSummary()}
-          </span>
-        )}
-      </div>
-
-      {/* Primary Selector */}
-      <select
-        value={isCustom ? 'CUSTOM' : value}
-        onChange={(e) => handleSelectPreset(e.target.value)}
-        className="mt-1.5 h-9 w-full rounded-xl border border-[#233554] bg-[#0a192f] px-3 py-1.5 text-sm text-[#ccd6f6] shadow-xs transition hover:border-[#233554]/80 focus:border-[#64ffda] focus:ring-1 focus:ring-[#64ffda]/30 focus:outline-hidden"
-      >
-        {PRESET_OPTIONS.map((opt) => (
-          <option key={opt.value} value={opt.value} className="bg-[#0a192f] text-[#ccd6f6]">
-            {opt.label}
-          </option>
-        ))}
-      </select>
-
-      {/* Custom Frequency Sub-Controls */}
-      {isCustom && (
-        <div className="mt-2 rounded-xl border border-[#233554]/90 bg-[#0a192f]/70 p-3 space-y-2 animate-in fade-in slide-in-from-top-1 duration-200">
-          <p className="text-[11px] text-[#8892b0]">Specify custom interval:</p>
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <Label className="text-[10px] text-[#8892b0]">Repeat Every</Label>
-              <Input
-                type="number"
-                min="1"
-                max="365"
-                value={customCount}
-                onChange={(e) => handleCustomChange(parseInt(e.target.value, 10) || 1, customUnit)}
-                className="mt-1 bg-[#112240] border-[#233554] text-[#ccd6f6] text-sm h-9 rounded-lg focus:border-[#64ffda]"
-              />
-            </div>
-            <div>
-              <Label className="text-[10px] text-[#8892b0]">Unit</Label>
-              <select
-                value={customUnit}
-                onChange={(e) => handleCustomChange(customCount, e.target.value as FrequencyUnit)}
-                className="mt-1 h-9 w-full rounded-lg border border-[#233554] bg-[#112240] px-2.5 py-1.5 text-sm text-[#ccd6f6] focus:border-[#64ffda] focus:outline-hidden"
-              >
-                <option value="DAYS">Days (e.g. 7, 21)</option>
-                <option value="WEEKS">Weeks</option>
-                <option value="MONTHS">Months</option>
-                <option value="YEARS">Years</option>
-              </select>
-            </div>
-          </div>
+      <Label className="text-xs text-[#8892b0]">{label}</Label>
+      <div className="mt-1.5 flex flex-col gap-2 sm:flex-row sm:items-center">
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-[#8892b0]">Every</span>
+          <Input
+            type="number"
+            min={1}
+            max={365}
+            value={value.everyN}
+            onChange={(e) =>
+              onChange({ ...value, everyN: Math.min(365, Math.max(1, parseInt(e.target.value, 10) || 1)) })
+            }
+            className="h-10 w-24 rounded-xl border-[#233554] bg-[#0a192f] text-[#ccd6f6] focus:border-[#64ffda]"
+          />
         </div>
+        <select
+          value={value.frequency}
+          onChange={(e) => onChange({ ...value, frequency: e.target.value as Frequency })}
+          className="h-10 w-full min-w-0 flex-1 rounded-xl border border-[#233554] bg-[#0a192f] px-3 py-1.5 text-base text-[#ccd6f6] focus:border-[#64ffda] focus:outline-hidden sm:text-sm"
+        >
+          {UNITS.map((u) => (
+            <option key={u.value} value={u.value} className="bg-[#0a192f] text-[#ccd6f6]">
+              {value.everyN === 1 ? u.one : u.many}
+            </option>
+          ))}
+        </select>
+      </div>
+      <p className="text-[11px] text-[#8892b0]">
+        {frequencyLabel(value.frequency, value.everyN)}. Posts at 18:00 on each due date.
+      </p>
+      {unit.value === 'MONTHLY' && (
+        <p className="text-[11px] text-[#8892b0]/80">
+          Dates past the end of a short month land on its last day.
+        </p>
       )}
     </div>
   )

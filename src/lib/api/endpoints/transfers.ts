@@ -1,5 +1,12 @@
 import { apiFetch } from '../client'
-import type { TransferListResponse } from '../types'
+import type { TransferListResponse, TransferSummary } from '../types'
+
+export interface CodeLookup {
+  kind: 'FAMILY' | 'PERSON'
+  id: string
+  name: string
+  instant: boolean
+}
 
 export type TransferCreateBody = {
   toFamilyId?: string | null
@@ -18,14 +25,21 @@ export type TransferCreateBody = {
 }
 
 export const transfersApi = {
-  list(familyId: string) {
+  list(familyId: string, page = 1, pageSize = 10) {
     return apiFetch<TransferListResponse>(
       `/api/familyos/families/${familyId}/transfers`,
+      { params: { page, page_size: pageSize } },
     )
   },
 
+  lookup(familyId: string, code: string) {
+    return apiFetch<CodeLookup>(`/api/familyos/families/${familyId}/transfers/lookup`, {
+      params: { code },
+    })
+  },
+
   create(familyId: string, body: TransferCreateBody) {
-    return apiFetch(`/api/familyos/families/${familyId}/transfers`, {
+    return apiFetch<TransferSummary>(`/api/familyos/families/${familyId}/transfers`, {
       method: 'POST',
       json: body,
     })
@@ -55,12 +69,18 @@ export const transfersApi = {
     })
   },
 
-  listPersonal() {
-    return apiFetch<TransferListResponse>('/api/familyos/transfers')
+  listPersonal(page = 1, pageSize = 10) {
+    return apiFetch<TransferListResponse>('/api/familyos/transfers', {
+      params: { page, page_size: pageSize },
+    })
+  },
+
+  lookupPersonal(code: string) {
+    return apiFetch<CodeLookup>('/api/familyos/transfers/lookup', { params: { code } })
   },
 
   createPersonal(body: TransferCreateBody) {
-    return apiFetch('/api/familyos/transfers', {
+    return apiFetch<TransferSummary>('/api/familyos/transfers', {
       method: 'POST',
       json: {
         ...body,

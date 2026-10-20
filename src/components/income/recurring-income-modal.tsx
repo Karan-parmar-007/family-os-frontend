@@ -446,7 +446,7 @@ export function RecurringIncomeModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-h-[90vh] w-[calc(100vw-2rem)] overflow-y-auto sm:max-w-2xl">
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>{existing ? 'Edit recurring income' : 'Add recurring income'}</DialogTitle>
           <DialogDescription>
@@ -691,7 +691,7 @@ export function RecurringIncomeModal({
                 <p className="text-xs text-muted-foreground">
                   Enter at least one — years, months, or days. You can combine them.
                 </p>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-1 gap-2 min-[420px]:grid-cols-3">
                   <Input type="number" placeholder="Years" value={form.custom_years} onChange={(e) => setForm({ ...form, custom_years: e.target.value })} />
                   <Input type="number" placeholder="Months" value={form.custom_months} onChange={(e) => setForm({ ...form, custom_months: e.target.value })} />
                   <Input type="number" placeholder="Days" value={form.custom_days} onChange={(e) => setForm({ ...form, custom_days: e.target.value })} />
@@ -750,7 +750,7 @@ export function RecurringIncomeModal({
       </DialogContent>
 
       <Dialog open={showIntervalConfirm} onOpenChange={setShowIntervalConfirm}>
-        <DialogContent className="max-h-[90vh] w-[calc(100vw-2rem)] overflow-y-auto sm:max-w-2xl">
+        <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle>Update schedule?</DialogTitle>
             <DialogDescription>

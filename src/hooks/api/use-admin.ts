@@ -9,10 +9,10 @@ export const ADMIN_USERS_KEY = ['admin', 'users']
 export const ADMIN_FAMILIES_KEY = ['admin', 'families']
 export const ADMIN_CURRENCIES_KEY = ['admin', 'currencies']
 
-export function useAdminUsers() {
+export function useAdminUsers(page = 1, pageSize = 10, q?: string) {
   return useQuery({
-    queryKey: ADMIN_USERS_KEY,
-    queryFn: () => adminApi.listUsers(),
+    queryKey: [...ADMIN_USERS_KEY, page, pageSize, q ?? ''],
+    queryFn: () => adminApi.listUsers(page, pageSize, q),
   })
 }
 
@@ -38,10 +38,10 @@ export function useAdminDeleteUser() {
   })
 }
 
-export function useAdminFamilies() {
+export function useAdminFamilies(page = 1, pageSize = 10, q?: string) {
   return useQuery({
-    queryKey: ADMIN_FAMILIES_KEY,
-    queryFn: () => adminApi.listFamilies(),
+    queryKey: [...ADMIN_FAMILIES_KEY, page, pageSize, q ?? ''],
+    queryFn: () => adminApi.listFamilies(page, pageSize, q),
   })
 }
 
@@ -56,10 +56,10 @@ export function useAdminDeleteFamily() {
   })
 }
 
-export function useAdminCurrencies() {
+export function useAdminCurrencies(page = 1, pageSize = 10, q?: string) {
   return useQuery({
-    queryKey: ADMIN_CURRENCIES_KEY,
-    queryFn: () => adminApi.listCurrencies(),
+    queryKey: [...ADMIN_CURRENCIES_KEY, page, pageSize, q ?? ''],
+    queryFn: () => adminApi.listCurrencies(page, pageSize, q),
   })
 }
 

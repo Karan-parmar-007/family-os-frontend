@@ -1,6 +1,11 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { useState } from 'react'
 import { Home, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { PageBar } from '#/components/ui/list-pagination'
+import { Input } from '#/components/ui/input'
+import { useDebounced } from '#/hooks/use-debounced'
+import { usePagination } from '#/lib/api/pagination'
 import { useAdminDeleteFamily, useAdminFamilies } from '#/hooks/api/use-admin'
 
 export const Route = createFileRoute('/_authenticated/admin/families')({
@@ -8,7 +13,10 @@ export const Route = createFileRoute('/_authenticated/admin/families')({
 })
 
 function AdminFamiliesPage() {
-  const { data, isLoading } = useAdminFamilies()
+  const [q, setQ] = useState('')
+  const search = useDebounced(q.trim())
+  const paging = usePagination(search)
+  const { data, isLoading } = useAdminFamilies(paging.page, paging.pageSize, search)
   const deleteFamily = useAdminDeleteFamily()
 
   const handleDelete = async (id: string, name: string) => {
@@ -25,10 +33,62 @@ function AdminFamiliesPage() {
 
   return (
     <div>
+      <Input
+        value={q}
+        onChange={(e) => setQ(e.target.value)}
+        placeholder="Search families"
+        className="mb-3 w-full border-[#233554] bg-[#0a192f] text-[#ccd6f6] sm:max-w-sm"
+      />
       {isLoading ? (
         <div className="text-center py-12 text-[#8892b0] font-mono text-sm">Loading families...</div>
       ) : (
-        <div className="bg-[#112240] border border-[#172a45] rounded-2xl overflow-hidden shadow-xl">
+        <>
+        <div className="space-y-3 lg:hidden">
+          {data?.items.length === 0 && (
+            <p className="rounded-2xl border border-dashed border-[#233554] p-8 text-center text-sm text-[#8892b0]">No families match.</p>
+          )}
+          {data?.items.map((f) => (
+            <article key={f.id} className="rounded-2xl border border-[#172a45] bg-[#112240] p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex min-w-0 items-center gap-2">
+                  <Home className="h-4 w-4 shrink-0 text-[#64ffda]" />
+                  <p className="truncate font-medium text-white">{f.name}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleDelete(f.id, f.name)}
+                  className="shrink-0 rounded-lg p-1.5 text-red-400 hover:bg-red-500/10"
+                  title="Delete family"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
+              <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 text-xs">
+                <div>
+                  <dt className="text-[#8892b0]">Head</dt>
+                  <dd className="truncate text-[#ccd6f6]">{f.headName || '—'}</dd>
+                </div>
+                <div>
+                  <dt className="text-[#8892b0]">Members</dt>
+                  <dd className="font-mono text-white">{f.memberCount}</dd>
+                </div>
+                <div>
+                  <dt className="text-[#8892b0]">Currency</dt>
+                  <dd className="font-mono text-white">{f.currency}</dd>
+                </div>
+                <div>
+                  <dt className="text-[#8892b0]">Created</dt>
+                  <dd className="text-[#ccd6f6]">{new Date(f.createdAt).toLocaleDateString()}</dd>
+                </div>
+                <div className="col-span-2">
+                  <dt className="text-[#8892b0]">Timezone</dt>
+                  <dd className="break-all text-white">{f.timezone}</dd>
+                </div>
+              </dl>
+            </article>
+          ))}
+        </div>
+        <div className="hidden bg-[#112240] border border-[#172a45] rounded-2xl overflow-hidden shadow-xl lg:block">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm text-[#ccd6f6]">
               <thead className="bg-[#0a192f]/80 text-[11px] font-mono uppercase text-[#8892b0] border-b border-[#172a45]">
@@ -77,7 +137,9 @@ function AdminFamiliesPage() {
             </table>
           </div>
         </div>
+        </>
       )}
+      <PageBar state={paging} data={data} />
     </div>
   )
 }

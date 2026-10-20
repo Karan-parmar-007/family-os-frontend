@@ -951,6 +951,12 @@ export interface TransferSummary {
   nextRunDate?: string | null
   direction?: string | null
   note?: string | null
+  fromLabel?: string | null
+  toLabel?: string | null
+  viaCode?: boolean
+  canAccept?: boolean
+  canCancel?: boolean
+  failureReason?: string | null
   createdBy: string
   createdAt: string
 }
@@ -969,6 +975,10 @@ export interface FriendshipSummary {
 
 export interface FriendshipListResponse {
   items: FriendshipSummary[]
+  total: number
+  page: number
+  pageSize: number
+  totalPages: number
 }
 
 export interface FriendUserOption {
@@ -986,6 +996,10 @@ export interface FriendCodeResponse {
 
 export interface TransferListResponse {
   items: TransferSummary[]
+  total: number
+  page: number
+  pageSize: number
+  totalPages: number
 }
 
 export interface FundingSourceInput {
@@ -1043,6 +1057,9 @@ export interface AssetSummary {
   acquiredOn?: string | null
   notes?: string | null
   inSomeoneName?: string | null
+  categoryId?: string | null
+  letEveryoneEdit?: boolean
+  canEdit?: boolean
   createdAt: string
 }
 
@@ -1279,6 +1296,10 @@ export interface UpcomingItem {
 export interface UpcomingResponse {
   horizonDays: number
   items: UpcomingItem[]
+  total: number
+  page: number
+  pageSize: number
+  totalPages: number
 }
 
 export interface HistoryItem {

@@ -529,7 +529,7 @@ function PersonalIncomeLogModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-h-[90vh] w-[calc(100vw-2rem)] overflow-y-auto sm:max-w-2xl">
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>{isEdit ? 'Income log detail' : 'Add personal income'}</DialogTitle>
           <DialogDescription>

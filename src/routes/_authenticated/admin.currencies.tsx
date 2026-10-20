@@ -2,6 +2,8 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
 import { Plus, Trash2, Edit2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { PageBar } from '#/components/ui/list-pagination'
+import { usePagination } from '#/lib/api/pagination'
 import {
   useAdminCreateCurrency,
   useAdminCurrencies,
@@ -14,7 +16,8 @@ export const Route = createFileRoute('/_authenticated/admin/currencies')({
 })
 
 function AdminCurrenciesPage() {
-  const { data, isLoading } = useAdminCurrencies()
+  const paging = usePagination()
+  const { data, isLoading } = useAdminCurrencies(paging.page, paging.pageSize)
   const createCurrency = useAdminCreateCurrency()
   const updateCurrency = useAdminUpdateCurrency()
   const deleteCurrency = useAdminDeleteCurrency()
@@ -74,14 +77,14 @@ function AdminCurrenciesPage() {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-6">
-        <p className="text-xs text-[#8892b0] font-sans">
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <p className="min-w-0 text-xs text-[#8892b0] font-sans">
           Currencies catalog: Rates are defined as <code className="font-mono text-[#64ffda]">rate_to_usd</code> (1 unit in this currency = X USD). USD is canonical base (1.0).
         </p>
         <button
           type="button"
           onClick={() => setShowAddModal(true)}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#64ffda] text-[#0a192f] text-xs font-semibold hover:bg-[#64ffda]/90 transition-colors shadow"
+          className="flex w-full shrink-0 items-center justify-center gap-1.5 rounded-xl bg-[#64ffda] px-3 py-2 text-xs font-semibold text-[#0a192f] shadow transition-colors hover:bg-[#64ffda]/90 sm:w-auto sm:py-1.5"
         >
           <Plus className="w-4 h-4" />
           <span>Add Currency</span>
@@ -139,7 +142,7 @@ function AdminCurrenciesPage() {
                 required
               />
             </div>
-            <div className="sm:col-span-4 flex justify-end gap-2 pt-2">
+            <div className="form-actions pt-2 sm:col-span-4">
               <button
                 type="button"
                 onClick={() => setShowAddModal(false)}
@@ -162,7 +165,77 @@ function AdminCurrenciesPage() {
       {isLoading ? (
         <div className="text-center py-12 text-[#8892b0] font-mono text-sm">Loading currencies...</div>
       ) : (
-        <div className="bg-[#112240] border border-[#172a45] rounded-2xl overflow-hidden shadow-xl">
+        <>
+        <div className="space-y-3 lg:hidden">
+          {data?.items.length === 0 && (
+            <p className="rounded-2xl border border-dashed border-[#233554] p-8 text-center text-sm text-[#8892b0]">No currencies yet.</p>
+          )}
+          {data?.items.map((c) => (
+            <article key={c.code} className="rounded-2xl border border-[#172a45] bg-[#112240] p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="font-mono text-base font-bold text-[#64ffda]">{c.code}</p>
+                  <p className="truncate text-sm text-white">{c.name}</p>
+                </div>
+                <span
+                  className={`shrink-0 rounded-full border px-2 py-0.5 font-mono text-[10px] ${
+                    c.isActive
+                      ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400'
+                      : 'border-[#233554] bg-[#172a45] text-[#8892b0]'
+                  }`}
+                >
+                  {c.isActive ? 'Active' : 'Inactive'}
+                </span>
+              </div>
+              <div className="mt-3 flex items-end justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-[11px] text-[#8892b0]">Symbol · rate to USD</p>
+                  {editingCode === c.code ? (
+                    <div className="mt-1 flex flex-wrap items-center gap-2">
+                      <input
+                        type="number"
+                        step="any"
+                        value={editRate}
+                        onChange={(e) => setEditRate(e.target.value)}
+                        className="h-10 w-28 rounded border border-[#64ffda] bg-[#0a192f] px-2 font-mono text-sm text-white"
+                      />
+                      <button type="button" onClick={() => handleSaveEdit(c.code)} className="font-mono text-xs text-[#64ffda]">Save</button>
+                      <button type="button" onClick={() => setEditingCode(null)} className="font-mono text-xs text-[#8892b0]">Cancel</button>
+                    </div>
+                  ) : (
+                    <p className="mt-1 font-mono text-sm text-white">
+                      {c.symbol} · {c.rateToUsd}
+                    </p>
+                  )}
+                </div>
+                {c.code !== 'USD' && editingCode !== c.code && (
+                  <div className="flex shrink-0 items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingCode(c.code)
+                        setEditRate(String(c.rateToUsd))
+                      }}
+                      className="rounded-lg p-1.5 text-[#8892b0] hover:text-[#64ffda]"
+                      title="Edit rate"
+                    >
+                      <Edit2 className="h-4 w-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(c.code)}
+                      className="rounded-lg p-1.5 text-red-400 hover:bg-red-500/10"
+                      title="Delete currency"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                )}
+              </div>
+            </article>
+          ))}
+        </div>
+        <div className="hidden bg-[#112240] border border-[#172a45] rounded-2xl overflow-hidden shadow-xl lg:block">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm text-[#ccd6f6]">
               <thead className="bg-[#0a192f]/80 text-[11px] font-mono uppercase text-[#8892b0] border-b border-[#172a45]">
@@ -260,7 +333,9 @@ function AdminCurrenciesPage() {
             </table>
           </div>
         </div>
+        </>
       )}
+      <PageBar state={paging} data={data} />
     </div>
   )
 }

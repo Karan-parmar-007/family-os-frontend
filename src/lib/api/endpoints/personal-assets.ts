@@ -18,6 +18,8 @@ export const personalAssetsApi = {
       notes?: string
       acquired_on?: string
       document_id?: string
+      category_id?: string | null
+      let_everyone_edit?: boolean
     },
   ) {
     return apiFetch('/api/familyos/personal/assets', {

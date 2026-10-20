@@ -6,6 +6,7 @@ import { z } from 'zod'
 import { Loader2Icon, KeyIcon, MailIcon, UserIcon, CoinsIcon, ShieldIcon, CopyIcon } from 'lucide-react'
 import { toast } from 'sonner'
 import { AppShell } from '#/components/layout/app-shell'
+import { CategoryManager } from '#/components/common/category-manager'
 import { Button } from '#/components/ui/button'
 import {
   Card,
@@ -58,6 +59,7 @@ function ProfilePage() {
           <ProfileSection />
           <FriendCodeSection />
           <CurrencySection />
+          <CategoryManager scope="PERSONAL" />
           <SsoAccountSection />
           {user?.is_super_admin && (
             <Card className="glass">

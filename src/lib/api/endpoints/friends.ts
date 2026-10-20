@@ -7,8 +7,10 @@ import type {
 } from '../types'
 
 export const friendsApi = {
-  list() {
-    return apiFetch<FriendshipListResponse>('/api/familyos/friends')
+  list(page = 1, pageSize = 10) {
+    return apiFetch<FriendshipListResponse>('/api/familyos/friends', {
+      params: { page, page_size: pageSize },
+    })
   },
 
   active() {

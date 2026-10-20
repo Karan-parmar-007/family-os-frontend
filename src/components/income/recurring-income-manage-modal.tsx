@@ -36,7 +36,7 @@ export function RecurringIncomeManageModal({
 }) {
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>Manage my recurring income</DialogTitle>
           <DialogDescription>

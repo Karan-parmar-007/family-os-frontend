@@ -27,6 +27,8 @@ export const assetsApi = {
       is_personal?: boolean
       document_id?: string
       in_someone_name?: string
+      category_id?: string | null
+      let_everyone_edit?: boolean
     },
   ) {
     return apiFetch(`/api/familyos/families/${familyId}/assets`, {
@@ -38,7 +40,14 @@ export const assetsApi = {
   update(
     familyId: string,
     assetId: string,
-    body: { asset_name?: string; value?: number; access_level?: string },
+    body: {
+      asset_name?: string
+      value?: number
+      access_level?: string
+      category_id?: string | null
+      let_everyone_edit?: boolean
+      notes?: string
+    },
   ) {
     return apiFetch(`/api/familyos/families/${familyId}/assets/${assetId}`, {
       method: 'PATCH',
